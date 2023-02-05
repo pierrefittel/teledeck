@@ -9,6 +9,9 @@ class Message(models.Model):
     channel_name = models.CharField(max_length=100)
     view_count = models.IntegerField()
     share_count = models.IntegerField()
+    def __str__(self):
+        message_url = 'https://t.me/{}/{}'.format(self.channel_name, self.message_id)
+        return message_url
 
 
 class Channel(models.Model):
@@ -25,9 +28,10 @@ class Group(models.Model):
         return self.channel_group
 
 class Filter(models.Model):
-    text_filter = models.CharField(max_length=100)
-    translation_filter = models.CharField(max_length=100)
-    view_count = models.IntegerField()
-    share_count = models.IntegerField()
-    start_date = models.DateField(default=datetime.date.today)
-    end_date = models.DateField(default=datetime.date.today)
+    text_filter = models.CharField(max_length=100, blank=True)
+    translation_filter = models.CharField(max_length=100, blank=True)
+    view_count = models.IntegerField(null=True)
+    share_count = models.IntegerField(null=True)
+    start_date = models.DateTimeField(default=datetime.date.today, null=True)
+    end_date = models.DateTimeField(default=datetime.date.today, null=True)
+    is_active = models.BooleanField(default=False)

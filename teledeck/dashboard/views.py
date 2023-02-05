@@ -1,18 +1,19 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
-from django.template import loader
 from django.core.serializers import json
 
 from .forms import AddChannel, CreateFilter
 from .models import Message, Channel, Group, Filter
 
-def index (request):
+def index(request):
     #Retrieve all groups
     groups = Group.objects.all()
     #Retrieve all channels
     channels = Channel.objects.all()
     #Retrieve all messages
     messages = Message.objects.all()
+    #Retrieve all filters
+    filters = Filter.objects.all()
     #Remove unselected channel from selection
     for channel in channels:
         if channel.channel_toggle == False:
@@ -25,7 +26,7 @@ def index (request):
     #Message data JSON serialization for JS manipulation
     json_serializer = json.Serializer()
     messages_data = json_serializer.serialize(Message.objects.all())
-    context = {'groups': groups, 'messages': messages, 'channels': channels, 'add_channel': add_channel, 'create_filter': create_filter, 'messages_data': messages_data}
+    context = {'groups': groups, 'messages': messages, 'channels': channels, 'filters': filters, 'add_channel': add_channel, 'create_filter': create_filter, 'messages_data': messages_data}
     return render(request, 'dashboard/index.html', context)
 
 def add_channel(request):
@@ -38,6 +39,11 @@ def add_channel(request):
         form = AddChannel()
     return HttpResponseRedirect('/dashboard')
 
+def delete_channel(request, channel_name=None):
+    channel = Channel.objects.get(channel_name=channel_name)
+    channel.delete()
+    return HttpResponseRedirect('/dashboard')
+
 def create_filter(request):
     if request.method == "POST":
         form = CreateFilter(request.POST)
@@ -48,6 +54,23 @@ def create_filter(request):
         form = CreateFilter()
     return HttpResponseRedirect('/dashboard')
 
+def toggle_filter(request, filter_id=None):
+    filter = Filter.objects.get(pk=filter_id)
+    if filter.is_active == True:
+        filter.is_active = False
+        filter.save()
+    elif filter.is_active == False:
+        filter.is_active = True
+        filter.save()
+    filters = Filter.objects.all()
+    context = {'filters': filters}
+    return render(request, 'dashboard/filter.html', context)
+
+def delete_filter(request, filter_id=None):
+    filter = Filter.objects.get(pk=filter_id)
+    filter.delete()
+    return HttpResponseRedirect('/dashboard')
+
 def toggle_channel(request, channel_name=None):
     channel = Channel.objects.get(channel_name=channel_name)
     if channel.channel_toggle == True:
@@ -56,7 +79,10 @@ def toggle_channel(request, channel_name=None):
     elif channel.channel_toggle == False:
         channel.channel_toggle = True
         channel.save()
-    return HttpResponseRedirect('/dashboard')
+    groups = Group.objects.all()
+    channels = Channel.objects.all()
+    context = {'groups': groups, 'channels': channels}
+    return render(request, 'dashboard/sources.html', context)
 
 def show_detail(request, id=None):
     message = Message.objects.get(id=id)
@@ -79,9 +105,8 @@ def toggle_group(request, channel_group=None):
         for channel in channels:
             channel.channel_toggle = True
             channel.save()
-    return HttpResponseRedirect('/dashboard')
+    groups = Group.objects.all()
+    channels = Channel.objects.all()
+    context = {'groups': groups, 'channels': channels}
+    return render(request, 'dashboard/sources.html', context)
 
-def delete_channel(request, channel_name=None):
-    channel = Channel.objects.get(channel_name=channel_name)
-    channel.delete()
-    return HttpResponseRedirect('/dashboard')

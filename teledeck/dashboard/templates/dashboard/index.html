@@ -30,7 +30,7 @@
               <li class="nav-item" id="nav-general">
                 <div class="nav-link user-select-none">
                   <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/home.svg' %}"></img>
-                  Vue générale
+                  Global view
                 </div>
               </li>
               <li class="nav-item" id="nav-sources">
@@ -42,7 +42,7 @@
               <li class="nav-item" id="nav-filtres">
                 <div class="nav-link user-select-none">
                   <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/search.svg' %}"></img>
-                  Filtres
+                  Filters
                 </div>
               </li>
               <li class="nav-item" id="nav-messages">
@@ -54,7 +54,7 @@
               <li class="nav-item" id="nav-details">
                 <div class="nav-link user-select-none">
                   <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/details.svg' %}"></img>
-                  Détails
+                  Details
                 </div>
               </li>
             </ul>
@@ -83,18 +83,18 @@
           <span class="fs-4">Sources</span>
         </div>
         <hr>
-        <ul class="list-unstyled ps-0">
+        <ul class="list-unstyled ps-0" id="source-list">
           {% for group in groups %}
             <li class="mb-1">
               <span class="d-flex justify-content-between align-items-center nowrap">
-                <button class="btn btn-toggle d-inline-flex align-items-center border-0 collapsed bg-transparent" data-bs-toggle="collapse" data-bs-target="#{{ group.channel_group }}-collapse" aria-expanded="false" id="group-toggle">
+                <button class="btn btn-toggle d-inline-flex align-items-center border-0 collapsed bg-transparent shadow-none" data-bs-toggle="collapse" data-bs-target="#{{ group.channel_group }}-collapse" aria-expanded="false" id="group-toggle">
                   {{ group.channel_group }}
                 </button>
                 <form class="form-check form-switch">
                   {% if group.group_toggle == True %}
-                    <input class="form-check-input" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault" checked>
+                    <input class="form-check-input shadow-none" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault" checked>
                   {% elif group.group_toggle == False %}
-                    <input class="form-check-input" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault">
+                    <input class="form-check-input shadow-none" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault">
                   {% endif %}
                 </form>
               </span>
@@ -105,9 +105,9 @@
                       <li>
                         <span class="d-flex justify-content-between nowrap">
                           {% if channel.channel_toggle == True %}
-                            <a href="{% url 'toggle-channel' channel.channel_name %}" class="link-dark text-decoration-none rounded ellipsis bg-selected">{{ channel.channel_name }}</a>
+                            <a href="" class="link-dark text-decoration-none rounded ellipsis bg-selected" id="channel">{{ channel.channel_name }}</a>
                           {% elif channel.channel_toggle == False %}
-                            <a href="{% url 'toggle-channel' channel.channel_name %}" class="link-dark text-decoration-none rounded ellipsis bg-transparent">{{ channel.channel_name }}</a>
+                            <a href="" class="link-dark text-decoration-none rounded ellipsis bg-transparent" id="channel">{{ channel.channel_name }}</a>
                           {% endif %}
                           <a href="{% url 'delete-channel' channel.channel_name %}" class="bg-transparent">
                             <img class="bi pe-none me-2" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
@@ -125,8 +125,8 @@
         <hr>
 
         <p>
-          <button class="d-flex btn btn-secondary d-flex align-items-center shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source">
-            <span class="fs-6 me-3">Add source</span>
+          <button class="d-flex btn btn-secondary align-items-center shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source">
+            <span class="flex-grow-1 fs-6 me-3">Add source</span>
             <img class="bi pe-none" width="16" height="16" src="{% static 'dashboard/images/menu.svg' %}"></img>
           </button>
         </p>
@@ -136,7 +136,7 @@
               <form action="add-channel" method="post">
                 {% csrf_token %}
                 {{ add_channel|crispy }}
-                <input class="btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source" id="add-source-button"></input>
+                <input class="btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source" id="add-button"></input>
               </form>
             </div>
           </div>
@@ -154,17 +154,64 @@
         <form class="mb-3" action="create-filter" method="post">
           {% csrf_token %}
           {{ create_filter|crispy }}
-          <input class="d-flex align-item-center btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" id="add-button"></input>
+          <input class="d-flex align-item-center btn btn-secondary mt-3 fs-3 p-1 shadow-none" type="submit" value="+" id="add-button"></input>
         </form>
+
         <hr>
+        
+        <div id="filter-detail" class="scrollarea">
+          {% if filters %}
+            {% for filter in filters %}
+              {% if filter.is_active == True %}
+                <div class="list-group-item bg-light p-2 lh-sm mb-2 border-1 user-select-none" id="filter" value="{{ filter.pk }}" aria-current="true">
+              {% elif filter.is_active == False %}
+                <div class="list-group-item list-group-item-action p-2 lh-sm mb-2 border-1 user-select-none" id="filter" value="{{ filter.pk }}" aria-current="true">
+              {% endif %}
+              <span class="d-flex align-items-center justify-content-between mb-1">
+                <strong class="smaller">Filter {{ filter.pk }}</strong>
+                <a href="{% url 'delete-filter' filter.id %}" class="bg-transparent">
+                  <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
+                </a>
+              </span>
+              <div class="text-muted text-truncate smaller me-1 mb-2">
+                Text filter : {{ filter.text_filter }}
+              </div>
+              <div class="text-muted text-truncate smaller me-1 mb-2">
+                Translation filter : {{ filter.translation_filter }}
+              </div>
+              <span class="d-flex align-items-center">
+                <div class="text-muted smaller me-1">
+                  above {{ filter.view_count }} views
+                </div>
+                <div class="text-muted smaller me-1">
+                  above {{ filter.share_count }} shares
+                </div>
+                <div class="text-muted smaller me-1">
+                  from {{ filter.start_date }}
+                </div>
+                <div class="text-muted smaller me-1">
+                  until {{ filter.end_date }}
+                </div>
+              </span>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
       </div>
 
       <div class="b-example-divider b-example-vr"></div>
 
       <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 380px;" id="messages">
-        <div class="d-flex align-items-center flex-shrink-0 user-select-none">
+        <div class="d-flex align-items-center user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/messages.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Messages</span>
+          <button type="button" class="btn dark ms-auto shadow-none" id="message-panel-button" aria-label="Left Align">
+            <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/repeat.svg' %}" width="18" height="18">
+          </button>
+          <button type="button" class="btn ms-4 shadow-none" id="message-panel-button" aria-label="Left Align">
+            <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/filetype-csv.svg' %}" width="18" height="18">
+          </button>
         </div>
         <div>
           <hr>
@@ -215,7 +262,7 @@
       <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 500px;" id="details">
         <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/details.svg' %}" style="filter: invert(1);"></img>
-          <span class="fs-4">Détails</span>
+          <span class="fs-4">Details</span>
         </div>
         <hr>
         <div id="message-detail" class="p-4 mx-n3 scrollarea">

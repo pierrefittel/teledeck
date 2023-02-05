@@ -168,6 +168,27 @@ body {
     height: 40px;
   }
 
+  #message-panel-button {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0px;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    justify-items: center;
+    width: 36px;
+    height: 36px;
+    outline: none;
+  }
+
+  #message-panel-button:hover {
+    border: solid 2px lightgrey;
+  }
+
+  #message-panel-button:active {
+    border: solid 2px black;
+  }
+
   #group-toggle {
     border-radius: 0%;
   }
@@ -175,4 +196,13 @@ body {
   #message-thread {
     margin-left: -16px;
     margin-right: -16px;
+  }
+
+  #message-detail {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+
+  label {
+    font-size: x-small;
   }
