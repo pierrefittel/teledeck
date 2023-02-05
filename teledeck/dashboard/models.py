@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 
 class Message(models.Model):
     message_id = models.IntegerField()
@@ -22,3 +23,11 @@ class Group(models.Model):
     group_toggle = models.BooleanField()
     def __str__(self):
         return self.channel_group
+
+class Filter(models.Model):
+    text_filter = models.CharField(max_length=100)
+    translation_filter = models.CharField(max_length=100)
+    view_count = models.IntegerField()
+    share_count = models.IntegerField()
+    start_date = models.DateField(default=datetime.date.today)
+    end_date = models.DateField(default=datetime.date.today)

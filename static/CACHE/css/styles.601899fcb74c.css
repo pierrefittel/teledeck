@@ -1,0 +1,159 @@
+/* line 3, teledeck/dashboard/static/dashboard/styles/styles.scss */
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available; }
+
+/* line 8, teledeck/dashboard/static/dashboard/styles/styles.scss */
+html {
+  height: -webkit-fill-available; }
+
+/* line 12, teledeck/dashboard/static/dashboard/styles/styles.scss */
+main {
+  height: 100vh;
+  height: -webkit-fill-available;
+  max-height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden; }
+
+/* line 20, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.dropdown-toggle {
+  outline: 0; }
+
+/* line 22, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.btn-toggle {
+  padding: .25rem .5rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.65);
+  background-color: transparent; }
+
+/* line 28, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.btn-toggle:hover,
+.btn-toggle:focus {
+  color: rgba(0, 0, 0, 0.85);
+  background-color: #d2f4ea; }
+
+/* line 34, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.btn-toggle::before {
+  width: 1.25em;
+  line-height: 0;
+  content: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba%280,0,0,.5%29' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 14l6-6-6-6'/%3e%3c/svg%3e");
+  transition: transform .35s ease;
+  transform-origin: .5em 50%; }
+
+/* line 42, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.btn-toggle[aria-expanded="true"] {
+  color: rgba(0, 0, 0, 0.85); }
+
+/* line 45, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.btn-toggle[aria-expanded="true"]::before {
+  transform: rotate(90deg); }
+
+/* line 49, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.btn-toggle-nav a {
+  padding: .1875rem .5rem;
+  margin-top: .125rem;
+  margin-left: 1.25rem; }
+
+/* line 54, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.btn-toggle-nav a:hover,
+.btn-toggle-nav a:focus {
+  background-color: #d2f4ea; }
+
+/* line 59, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.scrollarea {
+  overflow-y: auto; }
+
+/* line 63, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.bd-placeholder-img {
+  font-size: 1.125rem;
+  text-anchor: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none; }
+
+@media (min-width: 768px) {
+  /* line 72, teledeck/dashboard/static/dashboard/styles/styles.scss */
+  .bd-placeholder-img-lg {
+    font-size: 3.5rem; } }
+
+/* line 77, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.b-example-divider {
+  height: 3rem;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: solid rgba(0, 0, 0, 0.15);
+  border-width: 1px 0;
+  box-shadow: inset 0 0.5em 1.5em rgba(0, 0, 0, 0.1), inset 0 0.125em 0.5em rgba(0, 0, 0, 0.15); }
+
+/* line 85, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.b-example-vr {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 100vh; }
+
+/* line 91, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.bi {
+  vertical-align: -.125em;
+  fill: currentColor; }
+
+/* line 96, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.nav-scroller {
+  position: relative;
+  z-index: 2;
+  height: 2.75rem;
+  overflow-y: hidden; }
+
+/* line 103, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.nav-scroller .nav {
+  display: flex;
+  flex-wrap: nowrap;
+  padding-bottom: 1rem;
+  margin-top: -1px;
+  overflow-x: auto;
+  text-align: center;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch; }
+
+/* line 114, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.nav:hover {
+  background-color: #fff;
+  color: black; }
+
+/* line 119, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.nowrap {
+  overflow: hidden;
+  white-space: nowrap; }
+
+/* line 124, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+/* line 129, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.bg-selected {
+  background-color: #d3d3d3; }
+
+/* line 133, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.form-check-input:checked {
+  background-color: #bebebe;
+  border-color: #a8a8a8; }
+
+/* line 138, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.form-check-input {
+  background-color: #bebebe;
+  border-color: #a8a8a8; }
+
+/* line 143, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.form-switch .form-check-input {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='gray'/%3e%3c/svg%3e"); }
+
+/* line 146, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.form-switch .form-check-input:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='gray'/%3e%3c/svg%3e"); }
+
+/* line 150, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.smaller {
+  font-size: x-small; }
+
+/* line 154, teledeck/dashboard/static/dashboard/styles/styles.scss */
+.asteriskField {
+  display: none; }

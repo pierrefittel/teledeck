@@ -1,27 +1,29 @@
 <!doctype html>
 <html lang="en">
   <head>
+    {% load compress %}
+    {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="Landry Pierrefitte">
     <title>Teledeck Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-    <link rel="icon" href="/static/dashboard/favicon/favicon.svg">
-    <link href="/static/dashboard/styles/styles.css" rel="stylesheet">
-    <script type="module" src="/static/dashboard/scripts/main.js" defer=""></script>
+    {% compress css %}
+    <link type="text/x-scss" href="{% static 'dashboard/styles/styles.scss'%}" rel="stylesheet">
+    {% endcompress %}
+    <link rel="icon" href="{% static 'dashboard/favicon/favicon.svg' %}">
+    <script type="module" src="{% static 'dashboard/scripts/main.js' %}" defer=""></script>
     <script>const data = {{ messages_data|safe }};</script>
   </head>
   <body>
-    {% load static %}
     {% load crispy_forms_tags %}
     <main class="d-flex flex-nowrap" id="main">
-      <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width: 240px;">
+      <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark" style="width: 240px;">
         <div class="d-flex align-items-center text-white mb-3 mb-md-0 me-md-auto user-select-none">
-          <img class="bi pe-none me-2" width="40" height="32" src="{% static 'dashboard/images/logo.svg' %}"></img>
+          <img class="bi pe-none me-2" width="36" height="36" src="{% static 'dashboard/images/logo.svg' %}"></img>
           <span class="fs-4">Teledeck</span>
         </div>
-        <hr>
+        <hr class="border border-secondary border-1">
         <div class="container-fluid">
           <div class="navbar-nav navbar-dark bg-dark" id="navbarColor01">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -85,14 +87,14 @@
           {% for group in groups %}
             <li class="mb-1">
               <span class="d-flex justify-content-between align-items-center nowrap">
-                <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed bg-transparent" data-bs-toggle="collapse" data-bs-target="#{{ group.channel_group }}-collapse" aria-expanded="false">
+                <button class="btn btn-toggle d-inline-flex align-items-center border-0 collapsed bg-transparent" data-bs-toggle="collapse" data-bs-target="#{{ group.channel_group }}-collapse" aria-expanded="false" id="group-toggle">
                   {{ group.channel_group }}
                 </button>
                 <form class="form-check form-switch">
                   {% if group.group_toggle == True %}
-                    <input class="form-check-input" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault" checked>
+                    <input class="form-check-input" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault" checked>
                   {% elif group.group_toggle == False %}
-                    <input class="form-check-input" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault">
+                    <input class="form-check-input" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault">
                   {% endif %}
                 </form>
               </span>
@@ -123,7 +125,7 @@
         <hr>
 
         <p>
-          <button class="d-flex btn btn-secondary d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source">
+          <button class="d-flex btn btn-secondary d-flex align-items-center shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source">
             <span class="fs-6 me-3">Add source</span>
             <img class="bi pe-none" width="16" height="16" src="{% static 'dashboard/images/menu.svg' %}"></img>
           </button>
@@ -133,8 +135,8 @@
             <div class="collapse" id="add-source">
               <form action="add-channel" method="post">
                 {% csrf_token %}
-                {{ form|crispy }}
-                <input class="btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source"></input>
+                {{ add_channel|crispy }}
+                <input class="btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source" id="add-source-button"></input>
               </form>
             </div>
           </div>
@@ -143,24 +145,34 @@
 
       <div class="b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 380px;" id="filtres">
-        <div class="d-flex align-items-center flex-shrink-0 p-3 user-select-none border-bottom">
+      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 380px;" id="filtres">
+        <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/search.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Filtres</span>
         </div>
+        <hr>
+        <form class="mb-3" action="create-filter" method="post">
+          {% csrf_token %}
+          {{ create_filter|crispy }}
+          <input class="d-flex align-item-center btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" id="add-button"></input>
+        </form>
+        <hr>
       </div>
 
       <div class="b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 380px;" id="messages">
-        <div class="d-flex align-items-center flex-shrink-0 p-3 user-select-none border-bottom">
+      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 380px;" id="messages">
+        <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/messages.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Messages</span>
         </div>
-        <div class="list-group list-group-flush border-bottom scrollarea">
+        <div>
+          <hr>
+        </div>
+        <div class="list-group list-group-flush scrollarea" id="message-thread">
           {% if messages %}
             {% for message in messages %}
-              <div value="{{ message.id }}" class="zindex-popover list-group-item list-group-item-action p-2 lh-sm" id="message-container" aria-current="true">
+              <div value="{{ message.id }}" class="list-group-item list-group-item-action p-2 lh-sm user-select-none" id="message-container" aria-current="true">
                 <div class="d-flex w-100 align-items-center justify-content-between">
                   <strong class="mb-1 text-truncate smaller">{{ message.channel_name }}</strong>
                   <a href="https://t.me/{{ message.channel_name }}/{{ message.message_id }}" class="text-muted text-decoration-none">
@@ -195,16 +207,18 @@
               <p>No message available.</p>
           {% endif %}
         </div>
+
       </div>
 
       <div class="b-example-divider b-example-vr"></div>
     
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 500px;" id="details">
-        <div class="d-flex align-items-center flex-shrink-0 p-3 user-select-none border-bottom">
+      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 500px;" id="details">
+        <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/details.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Détails</span>
         </div>
-        <div id="message-detail" class="p-4 scrollarea">
+        <hr>
+        <div id="message-detail" class="p-4 mx-n3 scrollarea">
         </div>
       </div>
     

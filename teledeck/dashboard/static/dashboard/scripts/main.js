@@ -10,6 +10,7 @@ function retrieveMessage(index) {
 //Show detailed message in the detail panel by loading JSON data from .view JSON serializer
 function showDetail(e) {
     const index = e.target.attributes.value.nodeValue;
+    console.log(e);
     const message = retrieveMessage(index);
     const detail = document.getElementById('message-detail');
     const messageDate = new Date(message.fields.message_date).toLocaleString();
@@ -24,15 +25,15 @@ function collapse(id) {
     if (targetElement.attributes.class.value == "d-flex flex-column flex-shrink-0 p-3 bg-light") {
         separator.setAttribute("class", "d-none b-example-divider b-example-vr");
         targetElement.setAttribute("class", "d-none flex-column flex-shrink-0 p-3 bg-light");
-    } else if (targetElement.attributes.class.value == "d-flex flex-column align-items-stretch flex-shrink-0 bg-white") {
+    } else if (targetElement.attributes.class.value == "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3") {
         separator.setAttribute("class", "d-none b-example-divider b-example-vr");
-        targetElement.setAttribute("class", "d-none flex-column align-items-stretch flex-shrink-0 bg-white");
+        targetElement.setAttribute("class", "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3");
     } else if (targetElement.attributes.class.value == "d-none flex-column flex-shrink-0 p-3 bg-light") {
         separator.setAttribute("class", "d-block b-example-divider b-example-vr");
         targetElement.setAttribute("class", "d-flex flex-column flex-shrink-0 p-3 bg-light");
-    } else if (targetElement.attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white") {
+    } else if (targetElement.attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3") {
         separator.setAttribute("class", "d-block b-example-divider b-example-vr");
-        targetElement.setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white");
+        targetElement.setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3");
     }
 }
 
@@ -44,15 +45,17 @@ function toggleAllPanels() {
             targetElements[i].setAttribute("class", "d-block b-example-divider b-example-vr");
         } else if (targetElements[i].attributes.class.value == "d-none flex-column flex-shrink-0 p-3 bg-light") {
             targetElements[i].setAttribute("class", "d-flex flex-column flex-shrink-0 p-3 bg-light");
-        } else if (targetElements[i].attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white") {
-            targetElements[i].setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white");
+        } else if (targetElements[i].attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3") {
+            targetElements[i].setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3");
         }
     }
 }
 
-//Channel group switch logic
-function toggleChannelGroup(groupName) {
-    
+//Request channel group toggle to Django dashboard/views
+function toggleChannelGroup(e) {
+    const group = e.target.id;
+    const request = `/dashboard/toggle-group/${group}`;
+    fetch(request);
 }
 
 //Event listeners
@@ -62,3 +65,4 @@ document.getElementById('nav-filtres').addEventListener('click', function() { co
 document.getElementById('nav-messages').addEventListener('click', function() { collapse('messages'); });
 document.getElementById('nav-details').addEventListener('click', function() { collapse('details'); });
 document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
+document.querySelectorAll('.form-check-input').forEach(toggle => { toggle.addEventListener('click', toggleChannelGroup); });
