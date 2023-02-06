@@ -1,0 +1,37 @@
+{% load static %}
+{% if messages %}
+    {% for message in messages %}
+        <div value="{{ message.id }}" class="list-group-item list-group-item-action p-2 lh-sm user-select-none" id="message-container" aria-current="true">
+        <div class="d-flex w-100 align-items-center justify-content-between">
+            <strong class="mb-1 text-truncate smaller">{{ message.channel_name }}</strong>
+            <a href="https://t.me/{{ message.channel_name }}/{{ message.message_id }}" class="text-muted text-decoration-none">
+            <small class="text-muted smaller">{{ message.message_date }}</small>
+            </a>
+        </div>
+        <span class="d-flex align-items-center justify-content-end">
+            <div class="text-muted smaller me-1">
+            {{ message.view_count }}
+            </div>
+            <img class="bi pe-none me-2" width="12" height="12" src="{% static 'dashboard/images/views.svg' %}" style="filter: invert(1);"></img>
+            <div class="text-muted smaller me-1">
+            {{ message.share_count }}
+            </div>
+            <img class="bi pe-none" width="12" height="12" src="{% static 'dashboard/images/shares.svg' %}" style="filter: invert(1);"></img>
+        </span>
+        {% if message.message_text %}
+            <div class="mt-3 smaller text-truncate">
+                {{ message.message_text }}
+            </div>
+            <div class="mt-2 mb-2 smaller text-truncate text-muted fst-italic">
+            Traduction : {{ message.text_translation }}
+            </div>
+        {% else %}
+            <div class="mb-1 smaller">
+            Entry does not contain any text
+            </div>
+        {% endif %}
+        </div>
+    {% endfor %}
+    {% else %}
+        <p>No message available.</p>
+{% endif %}

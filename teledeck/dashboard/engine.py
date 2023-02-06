@@ -1,11 +1,17 @@
-from telethon import TelegramClient
+from telethon import TelegramClient, utils
 import sqlite3
+import asyncio
 from googletrans import Translator
+
+#Parameters
+API_ID = 21437350
+API_HASH = '89452b63dc750b11efad4025ec484845'
+ITER = 10
 
 #Retrieve channel names from config
 def populateChannelList():
     channel_list = []
-    connexion = sqlite3.connect('../teledeck/db.sqlite3')
+    connexion = sqlite3.connect('./teledeck/db.sqlite3')
     cursor = connexion.cursor()
     data = cursor.execute("SELECT * FROM dashboard_channel")
     channels = data.fetchall()
@@ -14,15 +20,24 @@ def populateChannelList():
     return channel_list
 
 #Write data to Django DB
-def writeToDB(messages):
-    connexion = sqlite3.connect('../teledeck/db.sqlite3')
+def writeToDB(data):
+    connexion = sqlite3.connect('./teledeck/db.sqlite3')
     cursor = connexion.cursor()
-    for msg in messages:
-        text_translation = translateMessage(msg['message'])
+    for msg in data:
+        try:
+            message_text = msg['message']
+            text_translation = translateMessage(msg['message'])
+            views = msg['views']
+            shares = msg['forwards']
+        except KeyError:
+            message_text = 'No message available'
+            text_translation.text = 'No translation available'
+            views = 0
+            shares = 0
         query = """INSERT OR REPLACE INTO dashboard_message
         (message_text, text_translation, message_date, channel_name, view_count, share_count, message_id)
         VALUES (?, ?, ?, ?, ?, ?, ?);"""
-        data_tuple = (msg['message'], text_translation.text, msg['date'], msg['channel_name'], msg['views'], msg['forwards'], msg['id'])
+        data_tuple = (message_text, text_translation.text, msg['date'], msg['channel_name'], views, shares, msg['id'])
         cursor.execute(query, data_tuple)
         connexion.commit()
     cursor.close()
@@ -33,24 +48,23 @@ def translateMessage(message):
     return translation
 
 #Retrieve channel messages from each channel
-async def retrieveChnlMsg(channel_list, iter):
-    messages = []
-    for channel in channel_list:
-        channel_name = {"channel_name": channel}
-        async for message in client.iter_messages(channel, iter):
-            data = message.to_dict()
-            data.update(channel_name)
-            messages.append(data)
-    return messages
+async def retrieveMessage():
+    async with TelegramClient('anon', API_ID, API_HASH) as client:
+        channels = populateChannelList()
+        messages = []
+        for channel in channels:
+            channel_name = {"channel_name": channel}
+            async for message in client.iter_messages(channel, ITER):
+                data = message.to_dict()
+                data.update(channel_name)
+                messages.append(data)
+        return messages
 
-#Main sequence
-api_id = 21437350
-api_hash = '89452b63dc750b11efad4025ec484845'
-client = TelegramClient('anon', api_id, api_hash)
-iter = 10
-channels = populateChannelList()
-
-with client:
-    data = []
-    data = client.loop.run_until_complete(retrieveChnlMsg(channels, iter))
-    writeToDB(data)
+#This module check wether a Telegram channel exists and return a boolean response
+async def channelValidation(id):
+    async with TelegramClient('anon', API_ID, API_HASH) as client:
+        try:
+            response = await client.get_entity(id)
+        except ValueError:
+            response = 'error'
+        return response

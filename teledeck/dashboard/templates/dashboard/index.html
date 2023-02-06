@@ -57,6 +57,12 @@
                   Details
                 </div>
               </li>
+              <li class="nav-item" id="nav-update">
+                <div class="nav-link user-select-none">
+                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/arrow-down-circle.svg' %}" style="filter: invert(1)"></img>
+                  Update
+                </div>
+              </li>
             </ul>
           </div>
         </div>
@@ -109,7 +115,7 @@
                           {% elif channel.channel_toggle == False %}
                             <a href="" class="link-dark text-decoration-none rounded ellipsis bg-transparent" id="channel">{{ channel.channel_name }}</a>
                           {% endif %}
-                          <a href="{% url 'delete-channel' channel.channel_name %}" class="bg-transparent">
+                          <a href="" class="bg-transparent" id="delete-channel" value="{{ channel.channel_name }}">
                             <img class="bi pe-none me-2" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
                           </a>
                         </span>
@@ -136,7 +142,7 @@
               <form action="add-channel" method="post">
                 {% csrf_token %}
                 {{ add_channel|crispy }}
-                <input class="btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source" id="add-button"></input>
+                <input class="btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source" id="add-channel-button"></input>
               </form>
             </div>
           </div>
@@ -148,7 +154,7 @@
       <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 380px;" id="filtres">
         <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/search.svg' %}" style="filter: invert(1);"></img>
-          <span class="fs-4">Filtres</span>
+          <span class="fs-4">Filters</span>
         </div>
         <hr>
         <form class="mb-3" action="create-filter" method="post">
@@ -173,25 +179,37 @@
                   <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
                 </a>
               </span>
-              <div class="text-muted text-truncate smaller me-1 mb-2">
-                Text filter : {{ filter.text_filter }}
-              </div>
-              <div class="text-muted text-truncate smaller me-1 mb-2">
-                Translation filter : {{ filter.translation_filter }}
-              </div>
+              {% if filter.text_filter %}
+                <div class="text-muted text-truncate smaller me-1 mb-2">
+                  Text filter : {{ filter.text_filter }}
+                </div>
+              {% endif %}
+              {% if filter.translation_filter %}
+                <div class="text-muted text-truncate smaller me-1 mb-2">
+                  Translation filter : {{ filter.translation_filter }}
+                </div>
+              {% endif %}
               <span class="d-flex align-items-center">
-                <div class="text-muted smaller me-1">
-                  above {{ filter.view_count }} views
-                </div>
-                <div class="text-muted smaller me-1">
-                  above {{ filter.share_count }} shares
-                </div>
-                <div class="text-muted smaller me-1">
-                  from {{ filter.start_date }}
-                </div>
-                <div class="text-muted smaller me-1">
-                  until {{ filter.end_date }}
-                </div>
+                {% if filter.view_count %}
+                  <div class="text-muted smaller me-1">
+                    above {{ filter.view_count }} views
+                  </div>
+                {% endif %}
+                {% if filter.share_count %}
+                  <div class="text-muted smaller me-1">
+                    above {{ filter.share_count }} shares
+                  </div>
+                {% endif %}
+                {% if filter.start_date  %}
+                  <div class="text-muted smaller me-1">
+                    from {{ filter.start_date }}
+                  </div>
+                {% endif %}
+                {% if filter.end_date  %}
+                  <div class="text-muted smaller me-1">
+                    until {{ filter.end_date }}
+                  </div>
+                {% endif %}
               </span>
             </div>
             {% endfor %}
@@ -206,12 +224,18 @@
         <div class="d-flex align-items-center user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/messages.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Messages</span>
-          <button type="button" class="btn dark ms-auto shadow-none" id="message-panel-button" aria-label="Left Align">
-            <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/repeat.svg' %}" width="18" height="18">
-          </button>
-          <button type="button" class="btn ms-4 shadow-none" id="message-panel-button" aria-label="Left Align">
-            <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/filetype-csv.svg' %}" width="18" height="18">
-          </button>
+          <form class="ms-auto" action="sort-by-date" method="post">
+            {% csrf_token %}
+            <button type="submit" value="" class="btn shadow-none" id="message-panel-button" aria-label="Left Align">
+              <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/sort-down.svg' %}" width="18" height="18">
+            </button>
+          </form>
+          <form class="ms-1" action="csv-export" method="post">
+            {% csrf_token %}
+            <button type="submit" value="" class="btn shadow-none" id="message-panel-button" aria-label="Left Align">
+              <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/filetype-csv.svg' %}" width="18" height="18">
+            </button>
+          </form>
         </div>
         <div>
           <hr>
@@ -250,8 +274,6 @@
                 {% endif %}
               </div>
             {% endfor %}
-          {% else %}
-              <p>No message available.</p>
           {% endif %}
         </div>
 

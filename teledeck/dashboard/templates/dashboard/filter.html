@@ -12,25 +12,37 @@
       <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
     </a>
   </span>
-  <div class="text-muted text-truncate smaller me-1 mb-2">
-    Text filter : {{ filter.text_filter }}
-  </div>
-  <div class="text-muted text-truncate smaller me-1 mb-2">
-    Translation filter : {{ filter.translation_filter }}
-  </div>
+  {% if filter.text_filter %}
+    <div class="text-muted text-truncate smaller me-1 mb-2">
+      Text filter : {{ filter.text_filter }}
+    </div>
+  {% endif %}
+  {% if filter.translation_filter %}
+    <div class="text-muted text-truncate smaller me-1 mb-2">
+      Translation filter : {{ filter.translation_filter }}
+    </div>
+  {% endif %}
   <span class="d-flex align-items-center">
-    <div class="text-muted smaller me-1">
-      above {{ filter.view_count }} views
-    </div>
-    <div class="text-muted smaller me-1">
-      above {{ filter.share_count }} shares
-    </div>
-    <div class="text-muted smaller me-1">
-      from {{ filter.start_date }}
-    </div>
-    <div class="text-muted smaller me-1">
-      until {{ filter.end_date }}
-    </div>
+    {% if filter.view_count %}
+      <div class="text-muted smaller me-1">
+        above {{ filter.view_count }} views
+      </div>
+    {% endif %}
+    {% if filter.share_count %}
+      <div class="text-muted smaller me-1">
+        above {{ filter.share_count }} shares
+      </div>
+    {% endif %}
+    {% if filter.start_date  %}
+      <div class="text-muted smaller me-1">
+        from {{ filter.start_date }}
+      </div>
+    {% endif %}
+    {% if filter.end_date  %}
+      <div class="text-muted smaller me-1">
+        until {{ filter.end_date }}
+      </div>
+    {% endif %}
   </span>
 </div>
 {% endfor %}
