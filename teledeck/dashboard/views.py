@@ -8,7 +8,7 @@ from django.db.models.functions import Lower
 
 from .engine import writeToDB, retrieveMessage, channelValidation
 from .forms import AddChannel, CreateFilter
-from .models import Message, Channel, Group, Filter
+from .models import Message, Channel, Group, Filter, Parameter
 
 def index(request):
     #Retrieve all groups
@@ -19,6 +19,8 @@ def index(request):
     messages = filter_messages(request, "view")
     #Retrieve all filters
     filters = Filter.objects.all()
+    #Retrieve all parameters
+    parameters = Parameter.objects.get(user_name='admin')
     #Channel edit form
     add_channel = AddChannel()
     #Filter form
@@ -26,11 +28,21 @@ def index(request):
     #Message data JSON serialization for JS manipulation
     json_serializer = json.Serializer()
     messages_data = json_serializer.serialize(Message.objects.all())
-    context = {'groups': groups, 'messages': messages, 'channels': channels, 'filters': filters, 'add_channel': add_channel, 'create_filter': create_filter, 'messages_data': messages_data}
+    context = {
+        'groups': groups,
+        'messages': messages,
+        'channels': channels,
+        'filters': filters,
+        'add_channel': add_channel,
+        'create_filter': create_filter,
+        'messages_data': messages_data,
+        'parameters': parameters,
+        }
     return render(request, 'dashboard/index.html', context)
 
 def update_data(request):
-    data = asyncio.run(retrieveMessage())
+    iter = Parameter.objects.get(user_name='admin').message_retrieve_number
+    data = asyncio.run(retrieveMessage(iter))
     writeToDB(data)
     messages = filter_messages(request, "view")
     context = {'messages': messages}
@@ -125,6 +137,7 @@ def filter_messages(request, caller=None):
     for channel in channels:
         if channel.channel_toggle == False:
             messages = messages.exclude(channel_name = channel.channel_name)
+    #Filter messages from filters
     for filter in filters:
         if filter.is_active == True:
             if filter.text_filter != None:
@@ -132,7 +145,7 @@ def filter_messages(request, caller=None):
                 messages = messages.filter(message_text__icontains = filter.text_filter)
             if filter.translation_filter != None:
                 #Filter messages from translation
-                messages = messages.filter(text_translation__icontains = filter.translation_filter)
+                messages = messages.filter(message_text__icontains = filter.translation_filter)
             if filter.view_count != None:
                 #Filter messages from views
                 messages = messages.filter(view_count__gte = filter.view_count)
@@ -145,11 +158,31 @@ def filter_messages(request, caller=None):
             if filter.end_date != None:
                 #Filter messages from end date
                 messages = messages.filter(message_date__lte = filter.end_date)
-    messages = messages.order_by('-message_date')
-    context = {'messages': messages}
+    #Sort by date upward or downward based on account parameter
+    parameters = Parameter.objects.get(user_name='admin')
+    if parameters.message_sort_by_date == 'UP':
+        if request.get_full_path() == '/dashboard/sort-by-date':
+            #Prevent parameter modification on page reload
+            messages = messages.order_by('-message_date')
+            parameters.message_sort_by_date = 'DOWN'
+            parameters.save()
+        else:
+            messages = messages.order_by('message_date')
+    elif parameters.message_sort_by_date == 'DOWN':
+        if request.get_full_path() == '/dashboard/sort-by-date':
+            #Prevent parameter modification on page reload
+            messages = messages.order_by('message_date')
+            parameters.message_sort_by_date = 'UP'
+            parameters.save()
+        else:
+            messages = messages.order_by('-message_date')
+    #Render filtered messages and return them to another function or request depending on caller
+    context = {'messages': messages, 'parameters': parameters}
     if caller == 'view':
+        #If caller is another view, return messages as an object
         return messages
     else:
+        #If caller is a GET request, return messages as a segment of a webpage
         return render(request, 'dashboard/messages.html', context)
 
 def export_CSV(request):

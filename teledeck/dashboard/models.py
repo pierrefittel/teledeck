@@ -9,6 +9,8 @@ class Message(models.Model):
     channel_name = models.CharField(max_length=100)
     view_count = models.IntegerField()
     share_count = models.IntegerField()
+    class Meta:
+        unique_together = ["message_id", "channel_name"]
     def __str__(self):
         message_url = 'https://t.me/{}/{}'.format(self.channel_name, self.message_id)
         return message_url
@@ -21,7 +23,7 @@ class Channel(models.Model):
         return self.channel_name
 
 class Group(models.Model):
-    channel_group = models.CharField(max_length=100)
+    channel_group = models.CharField(max_length=100, unique=True)
     group_toggle = models.BooleanField()
     def __str__(self):
         return self.channel_group
@@ -36,11 +38,16 @@ class Filter(models.Model):
     is_active = models.BooleanField(default=False)
 
 class Parameter(models.Model):
-    #Define message threat sort order (date)
+    #Define a series of parameters related to layout and message retrieval
+    user_name = models.CharField(max_length=100, unique=True)
+    #Define message load sorting order by date
     SORTING_CHOICES = (
         ('UP', 'upward'),
         ('DOWN', 'downward'),
     )
     message_sort_by_date = models.CharField(max_length=10, choices=SORTING_CHOICES)
-    #Define message load number
+    #Define message retrieve and load number
+    message_retrieve_number = models.IntegerField()
     message_load_number = models.IntegerField()
+    def __str__(self):
+        return self.user_name

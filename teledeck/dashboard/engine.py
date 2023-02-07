@@ -6,7 +6,6 @@ from googletrans import Translator
 #Parameters
 API_ID = 21437350
 API_HASH = '89452b63dc750b11efad4025ec484845'
-ITER = 10
 
 #Retrieve channel names from config
 def populateChannelList():
@@ -34,7 +33,7 @@ def writeToDB(data):
             text_translation.text = 'No translation available'
             views = 0
             shares = 0
-        query = """INSERT OR REPLACE INTO dashboard_message
+        query = """REPLACE INTO dashboard_message
         (message_text, text_translation, message_date, channel_name, view_count, share_count, message_id)
         VALUES (?, ?, ?, ?, ?, ?, ?);"""
         data_tuple = (message_text, text_translation.text, msg['date'], msg['channel_name'], views, shares, msg['id'])
@@ -48,13 +47,13 @@ def translateMessage(message):
     return translation
 
 #Retrieve channel messages from each channel
-async def retrieveMessage():
+async def retrieveMessage(iter):
     async with TelegramClient('anon', API_ID, API_HASH) as client:
         channels = populateChannelList()
         messages = []
         for channel in channels:
             channel_name = {"channel_name": channel}
-            async for message in client.iter_messages(channel, ITER):
+            async for message in client.iter_messages(channel, iter):
                 data = message.to_dict()
                 data.update(channel_name)
                 messages.append(data)

@@ -1,5 +1,8 @@
-//Find message from its .models.Message db id (pk)
+import * as d3 from "./modules/d3.js";
+import data from "./values.json" assert { type: "json" };
+
 function retrieveMessage(index) {
+    //Find message from its .models.Message db id (pk)
     for (const d of data) {
         if (d.pk == index) {
             return d;
@@ -7,8 +10,8 @@ function retrieveMessage(index) {
     }
 }
 
-//Show all panels from "Vue générale"
 function toggleAllPanels() {
+    //Show all panels from "Vue générale"
     const targetElements = document.getElementById('main').children;
     for (let i = 1; i < targetElements.length; i++) {
         if (targetElements[i].attributes.class.value == "d-none b-example-divider b-example-vr") {
@@ -21,8 +24,8 @@ function toggleAllPanels() {
     }
 }
 
-//Toggle panels from nav bar depending on selected id
 function collapse(id) {
+    //Toggle panels from nav bar depending on selected id
     const targetElement = document.getElementById(id);
     const separator = targetElement.nextElementSibling;
     if (targetElement.attributes.class.value == "d-flex flex-column flex-shrink-0 p-3 bg-light") {
@@ -41,15 +44,15 @@ function collapse(id) {
 }
 
 function updateData() {
+    //Request channel group toggle to Django dashboard/views
     const request = '/dashboard/update-data';
     const xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
-    const messageThread = document.getElementById('message-thread');
+    const messageThread = document.getElementById('messages');
     messageThread.innerHTML = xmlHttp.responseText;
 }
 
-//Request channel group toggle to Django dashboard/views
 function toggleChannelGroup(e) {
     const group = e.target.id;
     const sourceDetail = document.getElementById('source-list');
@@ -64,8 +67,8 @@ function toggleChannelGroup(e) {
     updateMessages()
 }
 
-//Request channel toggle to Django dashboard/views
 function toggleChannel(e) {
+    //Request channel toggle to Django dashboard/views
     const channel = e.target.innerText;
     const sourceDetail = document.getElementById('source-list');
     const request = `/dashboard/toggle-channel/${channel}`;
@@ -105,8 +108,8 @@ function addChannel() {
     xmlHttp.send( encodedContent );
 }
 
-//Request filter toggle to Django dashboard/views
 function toggleFilter(e) {
+    //Request filter toggle to Django dashboard/views
     const filter = e.target.attributes.value.nodeValue;
     const filterDetail = document.getElementById('filter-detail');
     const request = `/dashboard/toggle-filter/${filter}`;
@@ -118,19 +121,32 @@ function toggleFilter(e) {
     updateMessages();
 }
 
-//Update message thread according to selected filters
 function updateMessages() {
-    const messageThread = document.getElementById('message-thread');
+    //Update message thread according to selected filters
+    const messageThread = document.getElementById('messages');
     const xmlHttp = new XMLHttpRequest();
     const request = `/dashboard/update-messages`;
     xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
     messageThread.innerHTML = xmlHttp.responseText;
+
     document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
 }
 
-//Show detailed message in the detail panel by loading JSON data from .view JSON serializer
+function sortByDate() {
+    //Request to Django to sort message thread up or down
+    const messageThread = document.getElementById('messages');
+    const request = '/dashboard/sort-by-date';
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, false);
+    xmlHttp.send( null );
+    messageThread.innerHTML = xmlHttp.responseText;
+    document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
+    document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
+}
+
 function showDetail(e) {
+    //Show detailed message in the detail panel by loading JSON data from .view JSON serializer
     const index = e.target.attributes.value.nodeValue;
     const message = retrieveMessage(index);
     const detail = document.getElementById('message-detail');
@@ -139,17 +155,24 @@ function showDetail(e) {
     detail.innerHTML = detailTemplate;
 }
 
-//Event listeners
+function computeGraph() {
+    //Compute and display a graph from filtered messages
+    const canvas = document.getElementById('canvas');
+    const graph = d3.histogram(data);
+    console.log(graph)
+    canvas.innerHTML = graph;
+}
+
 function addEvents() {
+    //Event listeners
     //Nav bar toggles
     document.getElementById('nav-general').addEventListener('click', function() { toggleAllPanels(); });
     document.getElementById('nav-sources').addEventListener('click', function() { collapse('sources'); });
     document.getElementById('nav-filtres').addEventListener('click', function() { collapse('filtres'); });
     document.getElementById('nav-messages').addEventListener('click', function() { collapse('messages'); });
     document.getElementById('nav-details').addEventListener('click', function() { collapse('details'); });
+    document.getElementById('nav-analysis').addEventListener('click', function() { collapse('quantitative-analysis'); });
     document.getElementById('nav-update').addEventListener('click', function() { updateData(); });
-    //Message detail toggle
-    document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
     //Channel group toggle
     document.querySelectorAll('.form-check-input').forEach(toggle => { toggle.addEventListener('click', toggleChannelGroup); });
     //Channel toggle
@@ -157,9 +180,14 @@ function addEvents() {
     //Channel delete
     document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
     //Add channel
-    document.getElementById('add-channe-button').addEventListener('click', function() { addChannel(); });
+    document.getElementById('add-channel-button').addEventListener('click', function() { addChannel(); });
     //Filter toggle
     document.querySelectorAll('#filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
+    //Sort by date button
+    document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
+    //Message detail toggle
+    document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
 }
 
 addEvents();
+computeGraph()

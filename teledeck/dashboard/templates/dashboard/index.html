@@ -18,7 +18,7 @@
   <body>
     {% load crispy_forms_tags %}
     <main class="d-flex flex-nowrap" id="main">
-      <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark" style="width: 240px;">
+      <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark" style="width: 260px;">
         <div class="d-flex align-items-center text-white mb-3 mb-md-0 me-md-auto user-select-none">
           <img class="bi pe-none me-2" width="36" height="36" src="{% static 'dashboard/images/logo.svg' %}"></img>
           <span class="fs-4">Teledeck</span>
@@ -55,6 +55,12 @@
                 <div class="nav-link user-select-none">
                   <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/details.svg' %}"></img>
                   Details
+                </div>
+              </li>
+              <li class="nav-item" id="nav-analysis">
+                <div class="nav-link user-select-none">
+                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/graph-up.svg' %}" style="filter: invert(1)"></img>
+                  Quantitative analysis
                 </div>
               </li>
               <li class="nav-item" id="nav-update">
@@ -224,15 +230,16 @@
         <div class="d-flex align-items-center user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/messages.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Messages</span>
-          <form class="ms-auto" action="sort-by-date" method="post">
-            {% csrf_token %}
-            <button type="submit" value="" class="btn shadow-none" id="message-panel-button" aria-label="Left Align">
+          <button type="submit" value="" class="btn ms-auto shadow-none message-panel-button" id="sort-by-date" aria-label="Left Align">
+            {% if parameters.message_sort_by_date == 'DOWN'  %}
               <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/sort-down.svg' %}" width="18" height="18">
+            {% elif parameters.message_sort_by_date == 'UP'  %}
+              <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/sort-up.svg' %}" width="18" height="18">
+            {% endif %}
             </button>
-          </form>
           <form class="ms-1" action="csv-export" method="post">
             {% csrf_token %}
-            <button type="submit" value="" class="btn shadow-none" id="message-panel-button" aria-label="Left Align">
+            <button type="submit" value="" class="btn shadow-none message-panel-button" id="csv-export" aria-label="Left Align">
               <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/filetype-csv.svg' %}" width="18" height="18">
             </button>
           </form>
@@ -246,7 +253,7 @@
               <div value="{{ message.id }}" class="list-group-item list-group-item-action p-2 lh-sm user-select-none" id="message-container" aria-current="true">
                 <div class="d-flex w-100 align-items-center justify-content-between">
                   <strong class="mb-1 text-truncate smaller">{{ message.channel_name }}</strong>
-                  <a href="https://t.me/{{ message.channel_name }}/{{ message.message_id }}" class="text-muted text-decoration-none">
+                  <a href="https://t.me/{{ message.channel_name }}/{{ message.message_id }}" class="mb-1 text-muted text-decoration-none">
                     <small class="text-muted smaller">{{ message.message_date }}</small>
                   </a>
                 </div>
@@ -276,7 +283,6 @@
             {% endfor %}
           {% endif %}
         </div>
-
       </div>
 
       <div class="b-example-divider b-example-vr"></div>
@@ -288,6 +294,18 @@
         </div>
         <hr>
         <div id="message-detail" class="p-4 mx-n3 scrollarea">
+        </div>
+      </div>
+    
+      <div class="b-example-divider b-example-vr"></div>
+
+      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 500px;" id="quantitative-analysis">
+        <div class="d-flex align-items-center flex-shrink-0 user-select-none">
+          <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/bootstrap-icons/graph-up.svg' %}"></img>
+          <span class="fs-4">Quantitative analysis</span>
+        </div>
+        <hr>
+        <div id="canvas" class="p-4 mx-n3 scrollarea">
         </div>
       </div>
     

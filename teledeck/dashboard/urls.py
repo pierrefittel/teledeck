@@ -13,5 +13,6 @@ urlpatterns = [
     path('toggle-channel/<channel_name>', views.toggle_channel, name='toggle-channel'),
     path('toggle-group/<channel_group>', views.toggle_group, name='toggle-group'),
     path('update-messages', views.filter_messages, name='update-messages'),
+    path('sort-by-date', views.filter_messages, name='sort-by-date'),
     path('csv-export', views.export_CSV, name='csv-export'),
 ]
