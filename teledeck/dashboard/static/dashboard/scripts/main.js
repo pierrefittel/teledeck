@@ -186,21 +186,19 @@ function showDetail(e) {
 function computeGraph() {
     //Compute and display a graph from filtered messages
     //Data parsing
-    document.getElementById('volume').innerHTML = ''
+    document.getElementById('post-count').innerHTML = ''
 
     //Data parsing
     const data = getFilteredData();
     const values = JSON.parse(data);
-    const formatTime = d3.timeFormat("%Y %m, %d");
+    const formatTime = d3.timeFormat("%Y.%m.%d");
     const tally = {};
+    const dataset = [];
     values.forEach(function(line) {
         const datetime = d3.isoParse(line.fields.message_date);
         const date = formatTime(datetime);
         tally[date] = (tally[date]||0) + 1;
     });
-
-    const dataset = [];
-
     for (const date in tally) {
         if (tally.hasOwnProperty(date)) {
             dataset.push({
@@ -211,10 +209,13 @@ function computeGraph() {
     }
 
     //Graph layout from d3.js
-    const margin = {top: 30, right: 30, bottom: 70, left: 60};
-    const width = 460 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
-    var svg = d3.select("#volume")
+    const canvas = document.querySelector('#post-count');
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = canvas.offsetHeight / 1.2;
+    const margin = {top: 20, right: 50, bottom: 70, left: 30};
+    const width = canvasWidth - margin.left - margin.right;
+    const height = canvasHeight - margin.top - margin.bottom;
+    var svg = d3.select("#post-count")
         .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -223,7 +224,7 @@ function computeGraph() {
                 "translate(" + margin.left + "," + margin.top + ")");
         // X axis
         var x = d3.scaleBand()
-            .range([ 0, width ])
+            .range([width, 0])
             .domain(dataset.map(function(d) { return d.date; }))
             .padding(0.2);
         svg.append("g")
@@ -231,16 +232,17 @@ function computeGraph() {
             .call(d3.axisBottom(x))
             .selectAll("text")
                 .attr("transform", "translate(-10,5)rotate(-45)")
+                .attr("class", "smaller")
                 .style("text-anchor", "end")
-                .style("font-family", "Monaco");
+                .style("font-family", "");
         // Add Y axis
         var y = d3.scaleLinear()
             .domain([0, d3.max(dataset, function(d) { return d.frequency })])
-            .range([ height, 0]);
+            .range([height, 0]);
         svg.append("g")
             .call(d3.axisLeft(y))
             .selectAll("text")
-                .style("font-family", "Monaco");
+                .style("font-family", "");
         svg.selectAll("mybar")
             .data(dataset)
             .enter()
@@ -260,7 +262,7 @@ function addEvents() {
     document.getElementById('nav-filtres').addEventListener('click', function() { collapse('filtres'); });
     document.getElementById('nav-messages').addEventListener('click', function() { collapse('messages'); });
     document.getElementById('nav-details').addEventListener('click', function() { collapse('details'); });
-    document.getElementById('nav-analysis').addEventListener('click', function() { collapse('quantitative-analysis'); });
+    document.getElementById('nav-analysis').addEventListener('click', function() { collapse('quantitative-analysis'); computeGraph() });
     document.getElementById('nav-update').addEventListener('click', function() { updateData(); });
     //Channel group toggle
     document.querySelectorAll('.form-check-input').forEach(toggle => { toggle.addEventListener('click', toggleChannelGroup); });
@@ -278,7 +280,9 @@ function addEvents() {
     document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
     //Message detail toggle
     document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
+    //Graph [anel resize event
+    document.getElementById('quantitative-analysis').addEventListener('click', function() { computeGraph(); });
 }
 
 addEvents();
-computeGraph()
+computeGraph();

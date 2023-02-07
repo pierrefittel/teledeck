@@ -193,11 +193,11 @@ body {
     outline: none;
   }
 
-  #message-panel-button:hover {
+  .message-panel-button:hover {
     border: solid 2px #d3d3d3;
   }
 
-  #message-panel-button:active {
+  .message-panel-button:active {
     border: solid 2px black;
   }
 
@@ -217,4 +217,9 @@ body {
 
   label {
     font-size: x-small;
+  }
+
+  #quantitative-analysis {
+    resize: horizontal;
+    overflow: hidden;
   }
