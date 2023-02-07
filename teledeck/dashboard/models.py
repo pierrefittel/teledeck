@@ -47,7 +47,7 @@ class Parameter(models.Model):
     )
     message_sort_by_date = models.CharField(max_length=10, choices=SORTING_CHOICES)
     #Define message retrieve and load number
-    message_retrieve_number = models.IntegerField()
+    message_retrieve_limit = models.IntegerField()
     message_load_number = models.IntegerField()
     def __str__(self):
         return self.user_name

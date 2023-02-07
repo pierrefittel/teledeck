@@ -1,13 +1,20 @@
-import * as d3 from "./modules/d3.js";
-import data from "./values.json" assert { type: "json" };
-
 function retrieveMessage(index) {
-    //Find message from its .models.Message db id (pk)
+    //Find message from its .models.Message db id (pk) - used to display message detail
     for (const d of data) {
         if (d.pk == index) {
             return d;
         }
     }
+}
+
+function getFilteredData() {
+    //Retrieve messages filtered metrics
+    const request = '/dashboard/get-data';
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, false);
+    xmlHttp.send( null );
+    const data = xmlHttp.responseText;
+    return data;
 }
 
 function toggleAllPanels() {
@@ -45,12 +52,14 @@ function collapse(id) {
 
 function updateData() {
     //Request channel group toggle to Django dashboard/views
+    const messageThread = document.getElementById('messages');
     const request = '/dashboard/update-data';
     const xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
-    const messageThread = document.getElementById('messages');
     messageThread.innerHTML = xmlHttp.responseText;
+    document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
+    document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
 }
 
 function toggleChannelGroup(e) {
@@ -65,6 +74,7 @@ function toggleChannelGroup(e) {
     document.querySelectorAll('#channel').forEach(channel => { channel.addEventListener('click', toggleChannel); });
     document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
     updateMessages()
+    computeGraph()
 }
 
 function toggleChannel(e) {
@@ -80,6 +90,7 @@ function toggleChannel(e) {
     document.querySelectorAll('#channel').forEach(channel => { channel.addEventListener('click', toggleChannel); });
     document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
     updateMessages()
+    computeGraph()
 }
 
 function deleteChannel(e) {
@@ -117,8 +128,25 @@ function toggleFilter(e) {
     xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
     filterDetail.innerHTML = xmlHttp.responseText;
-    document.querySelectorAll('#filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
+    document.querySelectorAll('#toggle-filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
+    document.querySelectorAll('#delete-filter').forEach(filter => { filter.addEventListener('click', deleteFilter); });
     updateMessages();
+    computeGraph()
+}
+
+function deleteFilter(e) {
+    //Request filter toggle to Django dashboard/views
+    const filter = e.target.attributes.value.nodeValue;
+    const filterDetail = document.getElementById('filter-detail');
+    const request = `/dashboard/delete-filter/${filter}`;
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, false);
+    xmlHttp.send( null );
+    filterDetail.innerHTML = xmlHttp.responseText;
+    document.querySelectorAll('#toggle-filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
+    document.querySelectorAll('#delete-filter').forEach(filter => { filter.addEventListener('click', deleteFilter); });
+    updateMessages();
+    computeGraph()
 }
 
 function updateMessages() {
@@ -157,10 +185,71 @@ function showDetail(e) {
 
 function computeGraph() {
     //Compute and display a graph from filtered messages
-    const canvas = document.getElementById('canvas');
-    const graph = d3.histogram(data);
-    console.log(graph)
-    canvas.innerHTML = graph;
+    //Data parsing
+    document.getElementById('volume').innerHTML = ''
+
+    //Data parsing
+    const data = getFilteredData();
+    const values = JSON.parse(data);
+    const formatTime = d3.timeFormat("%Y %m, %d");
+    const tally = {};
+    values.forEach(function(line) {
+        const datetime = d3.isoParse(line.fields.message_date);
+        const date = formatTime(datetime);
+        tally[date] = (tally[date]||0) + 1;
+    });
+
+    const dataset = [];
+
+    for (const date in tally) {
+        if (tally.hasOwnProperty(date)) {
+            dataset.push({
+                date: date,
+                frequency: tally[date]
+            });
+        }
+    }
+
+    //Graph layout from d3.js
+    const margin = {top: 30, right: 30, bottom: 70, left: 60};
+    const width = 460 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+    var svg = d3.select("#volume")
+        .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+        // X axis
+        var x = d3.scaleBand()
+            .range([ 0, width ])
+            .domain(dataset.map(function(d) { return d.date; }))
+            .padding(0.2);
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+                .attr("transform", "translate(-10,5)rotate(-45)")
+                .style("text-anchor", "end")
+                .style("font-family", "Monaco");
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([0, d3.max(dataset, function(d) { return d.frequency })])
+            .range([ height, 0]);
+        svg.append("g")
+            .call(d3.axisLeft(y))
+            .selectAll("text")
+                .style("font-family", "Monaco");
+        svg.selectAll("mybar")
+            .data(dataset)
+            .enter()
+            .append("rect")
+                .attr("x", function(d) { return x(d.date); })
+                .attr("y", function(d) { return y(d.frequency); })
+                .attr("width", x.bandwidth())
+                .attr("height", function(d) { return height - y(d.frequency); })
+                .attr("fill", "#838383")
 }
 
 function addEvents() {
@@ -182,7 +271,9 @@ function addEvents() {
     //Add channel
     document.getElementById('add-channel-button').addEventListener('click', function() { addChannel(); });
     //Filter toggle
-    document.querySelectorAll('#filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
+    document.querySelectorAll('#toggle-filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
+    //Delete filter
+    document.querySelectorAll('#delete-filter').forEach(filter => { filter.addEventListener('click', deleteFilter); });
     //Sort by date button
     document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
     //Message detail toggle

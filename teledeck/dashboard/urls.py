@@ -15,4 +15,5 @@ urlpatterns = [
     path('update-messages', views.filter_messages, name='update-messages'),
     path('sort-by-date', views.filter_messages, name='sort-by-date'),
     path('csv-export', views.export_CSV, name='csv-export'),
+    path('get-data', views.get_data, name='get-data'),
 ]

@@ -1,5 +1,7 @@
 import csv
 import asyncio
+import pandas
+import datetime
 
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
@@ -41,8 +43,8 @@ def index(request):
     return render(request, 'dashboard/index.html', context)
 
 def update_data(request):
-    iter = Parameter.objects.get(user_name='admin').message_retrieve_number
-    data = asyncio.run(retrieveMessage(iter))
+    limit = Parameter.objects.get(user_name='admin').message_retrieve_limit
+    data = asyncio.run(retrieveMessage(limit))
     writeToDB(data)
     messages = filter_messages(request, "view")
     context = {'messages': messages}
@@ -127,7 +129,9 @@ def toggle_filter(request, filter_id=None):
 def delete_filter(request, filter_id=None):
     filter = Filter.objects.get(pk=filter_id)
     filter.delete()
-    return HttpResponseRedirect('/dashboard')
+    filters = Filter.objects.all()
+    context = {'filters': filters}
+    return render(request, 'dashboard/filter.html', context)
 
 def filter_messages(request, caller=None):
     channels = Channel.objects.all()
@@ -145,7 +149,7 @@ def filter_messages(request, caller=None):
                 messages = messages.filter(message_text__icontains = filter.text_filter)
             if filter.translation_filter != None:
                 #Filter messages from translation
-                messages = messages.filter(message_text__icontains = filter.translation_filter)
+                messages = messages.filter(text_translation__icontains = filter.translation_filter)
             if filter.view_count != None:
                 #Filter messages from views
                 messages = messages.filter(view_count__gte = filter.view_count)
@@ -191,10 +195,22 @@ def export_CSV(request):
             content_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename="export.csv"'},
         )
-        writer = csv.writer(response)
         messages = filter_messages(request, "view")
+        writer = csv.writer(response)
         writer.writerow(['ID', 'Channel', 'Message ID', 'Message text', 'Message translation', 'Date', 'Views', 'Shares', 'URL'])
         for message in messages:
             message_url = 'https://t.me/{}/{}'.format(message.channel_name, message.message_id)
             writer.writerow([message.pk, message.channel_name, message.message_id, message.message_text, message.text_translation, message.message_date, message.view_count, message.share_count, message_url])
+    return response
+
+def get_data(request):
+    if request.method == "GET":
+        messages = filter_messages(request, "view")
+        json_serializer = json.Serializer()
+        content = json_serializer.serialize(messages)
+        response = HttpResponse(
+            content,
+            content_type='application/json',
+            headers={'Content-Disposition': 'inline'},
+        )
     return response

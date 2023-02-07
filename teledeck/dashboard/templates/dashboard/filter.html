@@ -1,49 +1,54 @@
 {% load static %}
 {% if filters %}
-{% for filter in filters %}
-  {% if filter.is_active == True %}
-    <div class="list-group-item bg-light p-2 lh-sm mb-2 border-1 user-select-none" id="filter" value="{{ filter.pk }}" aria-current="true">
-  {% elif filter.is_active == False %}
+  {% for filter in filters %}
     <div class="list-group-item list-group-item-action p-2 lh-sm mb-2 border-1 user-select-none" id="filter" value="{{ filter.pk }}" aria-current="true">
-  {% endif %}
-  <span class="d-flex align-items-center justify-content-between mb-1">
-    <strong class="smaller">Filter {{ filter.pk }}</strong>
-    <a href="{% url 'delete-filter' filter.id %}" class="bg-transparent">
-      <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
-    </a>
-  </span>
-  {% if filter.text_filter %}
-    <div class="text-muted text-truncate smaller me-1 mb-2">
-      Text filter : {{ filter.text_filter }}
-    </div>
-  {% endif %}
-  {% if filter.translation_filter %}
-    <div class="text-muted text-truncate smaller me-1 mb-2">
-      Translation filter : {{ filter.translation_filter }}
-    </div>
-  {% endif %}
-  <span class="d-flex align-items-center">
-    {% if filter.view_count %}
-      <div class="text-muted smaller me-1">
-        above {{ filter.view_count }} views
+    <span class="d-flex align-items-center mb-1">
+      <strong class="smaller">Filter {{ filter.pk }}</strong>
+      {% if filter.is_active == True %}
+      <a href="#" class="bg-transparent ms-auto" id="toggle-filter" value="{{ filter.pk }}">
+        <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/check-square.svg' %}"></img>
+      </a>
+      {% elif filter.is_active == False %}
+      <a href="#" class="bg-transparent ms-auto" id="toggle-filter" value="{{ filter.pk }}">
+        <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/square.svg' %}"></img>
+      </a>
+      {% endif %}
+      <a href="#" class="bg-transparent ms-2" id="delete-filter" value="{{ filter.pk }}">
+        <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/trash.svg' %}"></img>
+      </a>
+    </span>
+    {% if filter.text_filter %}
+      <div class="text-muted text-truncate smaller me-1 mb-2">
+        Text filter : {{ filter.text_filter }}
       </div>
     {% endif %}
-    {% if filter.share_count %}
-      <div class="text-muted smaller me-1">
-        above {{ filter.share_count }} shares
+    {% if filter.translation_filter %}
+      <div class="text-muted text-truncate smaller me-1 mb-2">
+        Translation filter : {{ filter.translation_filter }}
       </div>
     {% endif %}
-    {% if filter.start_date  %}
-      <div class="text-muted smaller me-1">
-        from {{ filter.start_date }}
-      </div>
-    {% endif %}
-    {% if filter.end_date  %}
-      <div class="text-muted smaller me-1">
-        until {{ filter.end_date }}
-      </div>
-    {% endif %}
-  </span>
-</div>
-{% endfor %}
+    <span class="d-flex align-items-center">
+      {% if filter.view_count %}
+        <div class="text-muted smaller me-1">
+          above {{ filter.view_count }} views
+        </div>
+      {% endif %}
+      {% if filter.share_count %}
+        <div class="text-muted smaller me-1">
+          above {{ filter.share_count }} shares
+        </div>
+      {% endif %}
+      {% if filter.start_date  %}
+        <div class="text-muted smaller me-1">
+          from {{ filter.start_date }}
+        </div>
+      {% endif %}
+      {% if filter.end_date  %}
+        <div class="text-muted smaller me-1">
+          until {{ filter.end_date }}
+        </div>
+      {% endif %}
+    </span>
+  </div>
+  {% endfor %}
 {% endif %}

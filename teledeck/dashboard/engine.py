@@ -1,6 +1,6 @@
 from telethon import TelegramClient, utils
 import sqlite3
-import asyncio
+from datetime import datetime, timedelta
 from googletrans import Translator
 
 #Parameters
@@ -41,19 +41,21 @@ def writeToDB(data):
         connexion.commit()
     cursor.close()
 
+#Translate message through Google Translate API - message size limited
 def translateMessage(message):
     translator = Translator()
     translation = translator.translate(message, dest='fr')
     return translation
 
 #Retrieve channel messages from each channel
-async def retrieveMessage(iter):
+async def retrieveMessage(limit):
     async with TelegramClient('anon', API_ID, API_HASH) as client:
+        time_limit = datetime.today() - timedelta(days=limit)
         channels = populateChannelList()
         messages = []
         for channel in channels:
             channel_name = {"channel_name": channel}
-            async for message in client.iter_messages(channel, iter):
+            async for message in client.iter_messages(channel, reverse=True, offset_date=time_limit):
                 data = message.to_dict()
                 data.update(channel_name)
                 messages.append(data)
