@@ -1,0 +1,19 @@
+{% load static %}
+{% if message %}
+<div class="list-group-item py-3 lh-sm" id="message-container" aria-current="true">
+    <div class="d-flex w-100 align-items-center justify-content-between">
+        <strong class="text-truncate">{{ message.channel_name }}</strong>
+        <a href="https://t.me/${message.fields.channel_name}/{ message.message_id }}" class="text-muted text-decoration-none">
+            <small class="text-muted">{{ message.message_date }}</small>
+        </a>
+    </div>
+    <span class="d-flex align-items-center justify-content-end">
+        <div class="text-muted small me-1">{{ message.view_count }}</div>
+        <img class="bi pe-none me-2" width="12" height="12" src="{% static 'dashboard/images/views.svg' %}" style="filter: invert(1);">
+        <div class="text-muted small me-1">{{ message.share_count }}</div>
+        <img class="bi pe-none" width="12" height="12" src="{% static 'dashboard/images/shares.svg' %}" style="filter: invert(1);">
+    </span>
+    <div class="mt-3 mb-3 smaller">{{ message.message_text }}</div>
+    <div class="mb-3 small text-muted fst-italic smaller">Traduction : {{ message.text_translation }}</div>
+</div>
+{% endif %}

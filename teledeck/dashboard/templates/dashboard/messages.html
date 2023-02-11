@@ -24,7 +24,7 @@
       {% for message in messages %}
         <div value="{{ message.id }}" class="list-group-item list-group-item-action p-2 lh-sm user-select-none" id="message-container" aria-current="true">
           <div class="d-flex w-100 align-items-center justify-content-between">
-            <strong class="mb-1 text-truncate smaller">{{ message.channel_name }}</strong>
+            <strong class="text-truncate smaller">{{ message.channel_name }}</strong>
             <a href="https://t.me/{{ message.channel_name }}/{{ message.message_id }}" class="mb-1 text-muted text-decoration-none">
               <small class="text-muted smaller">{{ message.message_date }}</small>
             </a>

@@ -1,12 +1,3 @@
-function retrieveMessage(index) {
-    //Find message from its .models.Message db id (pk) - used to display message detail
-    for (const d of data) {
-        if (d.pk == index) {
-            return d;
-        }
-    }
-}
-
 function getFilteredData() {
     //Retrieve messages filtered metrics
     const request = '/dashboard/get-data';
@@ -35,18 +26,18 @@ function collapse(id) {
     //Toggle panels from nav bar depending on selected id
     const targetElement = document.getElementById(id);
     const separator = targetElement.nextElementSibling;
-    if (targetElement.attributes.class.value == "d-flex flex-column flex-shrink-0 p-3 bg-light") {
+    if (targetElement.attributes.class.value == "d-flex flex-column flex-shrink-0 p-3 bg-light resizable") {
         separator.setAttribute("class", "d-none b-example-divider b-example-vr");
-        targetElement.setAttribute("class", "d-none flex-column flex-shrink-0 p-3 bg-light");
-    } else if (targetElement.attributes.class.value == "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3") {
+        targetElement.setAttribute("class", "d-none flex-column flex-shrink-0 p-3 bg-light resizable");
+    } else if (targetElement.attributes.class.value == "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable") {
         separator.setAttribute("class", "d-none b-example-divider b-example-vr");
-        targetElement.setAttribute("class", "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3");
-    } else if (targetElement.attributes.class.value == "d-none flex-column flex-shrink-0 p-3 bg-light") {
+        targetElement.setAttribute("class", "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable");
+    } else if (targetElement.attributes.class.value == "d-none flex-column flex-shrink-0 p-3 bg-light resizable") {
         separator.setAttribute("class", "d-block b-example-divider b-example-vr");
-        targetElement.setAttribute("class", "d-flex flex-column flex-shrink-0 p-3 bg-light");
-    } else if (targetElement.attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3") {
+        targetElement.setAttribute("class", "d-flex flex-column flex-shrink-0 p-3 bg-light resizable");
+    } else if (targetElement.attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable") {
         separator.setAttribute("class", "d-block b-example-divider b-example-vr");
-        targetElement.setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3");
+        targetElement.setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable");
     }
 }
 
@@ -55,7 +46,7 @@ function updateData() {
     const messageThread = document.getElementById('messages');
     const request = '/dashboard/update-data';
     const xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", request, false);
+    xmlHttp.open("GET", request, true);
     xmlHttp.send( null );
     messageThread.innerHTML = xmlHttp.responseText;
     document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
@@ -106,17 +97,60 @@ function deleteChannel(e) {
     document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
 }
 
-function addChannel() {
-    const request = '/dashboard/add-channel/';
+async function addChannel() {
+    //POST request content formatting
     const channeName = document.getElementById('id_channel_name').value;
     const channelGroup = document.getElementById('id_channel_group').value;
-    const content = [];
-    content.push(`${encodeURIComponent(channeName)}=${encodeURIComponent(channelGroup)}`);
-    const encodedContent = content.join('&').replace(/%20/g, '+');
-    const xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", request, false);
-    xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xmlHttp.send( encodedContent );
+    const content = `{"channel_name": "${channeName}", "channel_group": "${channelGroup}"}`;
+    //POST request
+    const CSRFToken = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+    const URL = '/dashboard/add-channel';
+    const response = await fetch(URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CSRFToken,
+            'origin': CSRFToken
+        },
+        body: content
+    });
+    let HTMLresponse = await response.text();
+    //Fetch.Response insertion in sources pannel
+    const sourceDetail = document.getElementById('source-list');
+    sourceDetail.innerHTML = HTMLresponse;
+    document.querySelectorAll('.form-check-input').forEach(toggle => { toggle.addEventListener('click', toggleChannelGroup); });
+    document.querySelectorAll('#channel').forEach(channel => { channel.addEventListener('click', toggleChannel); });
+    document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
+    document.getElementById('id_channel_name').attributes.value = '';
+}
+
+async function createFilter() {
+    //POST request content formatting
+    const textFilter = document.getElementById('id_text_filter').value;
+    const translationFilter = document.getElementById('id_translation_filter').value
+    const vviewCountFilter = document.getElementById('id_view_count').value
+    const shareCountFilter = document.getElementById('id_share_count').value
+    const startDate = document.getElementById('id_start_date').value
+    const endDate = document.getElementById('id_end_date').value
+    const content = `{"text_filter": "${textFilter}", "translation_filter": "${translationFilter}", "view_count": "${vviewCountFilter}", "share_count": "${shareCountFilter}", "start_date": "${startDate}", "end_date": "${endDate}"}`;
+    //POST request
+    const CSRFToken = document.getElementsByName("csrfmiddlewaretoken")[1].value;
+    const URL = '/dashboard/create-filter';
+    const response = await fetch(URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CSRFToken,
+            'origin': CSRFToken
+        },
+        body: content
+    });
+    let HTMLresponse = await response.text();
+    //Fetch.Response insertion in filter detail pannel
+    const filterDetail = document.getElementById('filter-detail');
+    filterDetail.innerHTML = HTMLresponse;
+    document.querySelectorAll('#toggle-filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
+    document.querySelectorAll('#delete-filter').forEach(filter => { filter.addEventListener('click', deleteFilter); });
 }
 
 function toggleFilter(e) {
@@ -137,27 +171,27 @@ function toggleFilter(e) {
 function deleteFilter(e) {
     //Request filter toggle to Django dashboard/views
     const filter = e.target.attributes.value.nodeValue;
-    const filterDetail = document.getElementById('filter-detail');
     const request = `/dashboard/delete-filter/${filter}`;
     const xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
+    const filterDetail = document.getElementById('filter-detail');
     filterDetail.innerHTML = xmlHttp.responseText;
     document.querySelectorAll('#toggle-filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
     document.querySelectorAll('#delete-filter').forEach(filter => { filter.addEventListener('click', deleteFilter); });
     updateMessages();
-    computeGraph()
+    computeGraph();
 }
 
 function updateMessages() {
     //Update message thread according to selected filters
-    const messageThread = document.getElementById('messages');
     const xmlHttp = new XMLHttpRequest();
     const request = `/dashboard/update-messages`;
     xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
+    const messageThread = document.getElementById('messages');
     messageThread.innerHTML = xmlHttp.responseText;
-
+    document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
     document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
 }
 
@@ -174,19 +208,38 @@ function sortByDate() {
 }
 
 function showDetail(e) {
-    //Show detailed message in the detail panel by loading JSON data from .view JSON serializer
+    //Open detail panel if closed
+    const detailPanel = document.getElementById('details')
+    const separator = detailPanel.nextElementSibling;
+    if (detailPanel.attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable") {
+        separator.setAttribute("class", "d-block b-example-divider b-example-vr");
+        detailPanel.setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable");
+    }
+    //Show detailed message in the detail panel
     const index = e.target.attributes.value.nodeValue;
-    const message = retrieveMessage(index);
-    const detail = document.getElementById('message-detail');
-    const messageDate = new Date(message.fields.message_date).toLocaleString();
-    const detailTemplate = `<div class="list-group-item py-3 lh-sm" id="message-container" aria-current="true"><div class="d-flex w-100 align-items-center justify-content-between"><strong class="mb-1 text-truncate">${message.fields.channel_name}</strong><a href="https://t.me/${message.fields.channel_name}/${message.fields.message_id}" class="text-muted text-decoration-none"><small class="text-muted">${messageDate}</small></a></div><span class="d-flex align-items-center justify-content-end"><div class="text-muted small me-1">${message.fields.view_count}</div><img class="bi pe-none me-2" width="12" height="12" src="/static/dashboard/images/views.svg" style="filter: invert(1);"><div class="text-muted small me-1">${message.fields.share_count}</div><img class="bi pe-none" width="12" height="12" src="/static/dashboard/images/shares.svg" style="filter: invert(1);"></span><div class="mt-3 mb-3 smaller">${message.fields.message_text}</div><div class="mb-3 small text-muted fst-italic smaller">Traduction : ${message.fields.text_translation}</div></div>`
-    detail.innerHTML = detailTemplate;
+    const request = `/dashboard/get-message-detail/${index}`;
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, false);
+    xmlHttp.send( null );
+    const messageDetail = document.getElementById('message-detail');
+    messageDetail.innerHTML = xmlHttp.responseText;
 }
 
-function computeGraph() {
+
+function graphSelect(e) {
+    const selection = e.target.value;
+    const target = e.target.parentElement.nextElementSibling;
+    console.log(target);
+    if (selection == 1) {
+        postTimeline(target);
+    }
+}
+
+
+function postTimeline(target) {
     //Compute and display a graph from filtered messages
     //Data parsing
-    document.getElementById('post-count').innerHTML = ''
+    target.innerHTML = ''
 
     //Data parsing
     const data = getFilteredData();
@@ -208,14 +261,15 @@ function computeGraph() {
         }
     }
 
-    //Graph layout from d3.js
-    const canvas = document.querySelector('#post-count');
+    //Post timeline layout from d3.js
+    const canvas = target;
     const canvasWidth = canvas.offsetWidth;
-    const canvasHeight = canvas.offsetHeight / 1.2;
-    const margin = {top: 20, right: 50, bottom: 70, left: 30};
+    const canvasHeight = canvas.offsetHeight / 1.15;
+    const margin = {top: 20, right: 80, bottom: 70, left: 30};
     const width = canvasWidth - margin.left - margin.right;
     const height = canvasHeight - margin.top - margin.bottom;
-    var svg = d3.select("#post-count")
+
+    var svg = d3.select(canvas)
         .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -223,33 +277,117 @@ function computeGraph() {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
         // X axis
-        var x = d3.scaleBand()
-            .range([width, 0])
-            .domain(dataset.map(function(d) { return d.date; }))
-            .padding(0.2);
+        var x = d3.scaleTime()
+            .domain(d3.extent(dataset, function(d) { return new Date(d.date); }))
+            .range([0, width]);
+        var xAxis = d3.axisBottom(x)
+            .ticks(d3.timeDay)
+            .tickFormat(d3.timeFormat("%Y.%m.%d"));
         svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x))
-            .selectAll("text")
-                .attr("transform", "translate(-10,5)rotate(-45)")
-                .attr("class", "smaller")
-                .style("text-anchor", "end")
-                .style("font-family", "");
+            .attr("transform", "translate(0, " + height + ")")
+            .call(xAxis)
+            .selectAll('line')
+                .attr("transform", "translate(" + (width / dataset.length * 0.35) + ", 0)");
+        svg.selectAll("text")
+            .attr("transform", "translate(0, 10)rotate(-90)")
+            .attr("class", "smaller")
+            .style("text-anchor", "end")
+            .style("font-family", "");
         // Add Y axis
         var y = d3.scaleLinear()
-            .domain([0, d3.max(dataset, function(d) { return d.frequency })])
+            .domain([0, Math.round(d3.max(dataset, function(d) { return d.frequency }))*1.1])
             .range([height, 0]);
         svg.append("g")
             .call(d3.axisLeft(y))
             .selectAll("text")
-                .style("font-family", "");
+                .style("font-family", "")
+        //Add bars
         svg.selectAll("mybar")
             .data(dataset)
             .enter()
             .append("rect")
-                .attr("x", function(d) { return x(d.date); })
+                .attr("x", function(d) { return x(new Date(d.date)); })
                 .attr("y", function(d) { return y(d.frequency); })
-                .attr("width", x.bandwidth())
+                .attr("width", width / dataset.length * 0.7)
+                .attr("height", function(d) { return height - y(d.frequency); })
+                .attr("fill", "#838383")
+}
+
+function viewTimeline(target) {
+    //Compute and display a graph from filtered messages
+    //Data parsing
+    target.innerHTML = ''
+
+    //Data parsing
+    const data = getFilteredData();
+    const values = JSON.parse(data);
+    const formatTime = d3.timeFormat("%Y.%m.%d");
+    const tally = {};
+    const dataset = [];
+    values.forEach(function(line) {
+        console.log(line.fields.view_count)
+        const datetime = d3.isoParse(line.fields.message_date);
+        const date = formatTime(datetime);
+        tally[date] = (tally[date]||0) + line.fields.view_count;
+    });
+    for (const date in tally) {
+        if (tally.hasOwnProperty(date)) {
+            dataset.push({
+                date: date,
+                frequency: tally[date]
+            });
+        }
+    }
+
+    //Post timeline layout from d3.js
+    const canvas = target;
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = canvas.offsetHeight / 1.15;
+    const margin = {top: 20, right: 80, bottom: 70, left: 30};
+    const width = canvasWidth - margin.left - margin.right;
+    const height = canvasHeight - margin.top - margin.bottom;
+
+    var svg = d3.select(canvas)
+        .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+        // X axis
+        var x = d3.scaleTime()
+            .domain(d3.extent(dataset, function(d) { return new Date(d.date); }))
+            .range([0, width]);
+        var xAxis = d3.axisBottom(x)
+            .ticks(d3.timeDay)
+            .tickFormat(d3.timeFormat("%Y.%m.%d"));
+        svg.append("g")
+            .attr("transform", "translate(0, " + height + ")")
+            .call(xAxis)
+            .selectAll('line')
+                .attr("transform", "translate(" + (width / dataset.length * 0.35) + ", 0)");
+        svg.selectAll("text")
+            .attr("transform", "translate(0, 10)rotate(-90)")
+            .attr("class", "smaller")
+            .style("text-anchor", "end")
+            .style("font-family", "");
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([0, Math.round(d3.max(dataset, function(d) { return d.frequency }))*1.1])
+            .range([height, 0]);
+        svg.append("g")
+            .call(d3.axisLeft(y))
+            .selectAll("text")
+                .style("font-family", "")
+                .format(".2s");
+        //Add bars
+        svg.selectAll("mybar")
+            .data(dataset)
+            .enter()
+            .append("rect")
+                .attr("x", function(d) { return x(new Date(d.date)); })
+                .attr("y", function(d) { return y(d.frequency); })
+                .attr("width", width / dataset.length * 0.7)
                 .attr("height", function(d) { return height - y(d.frequency); })
                 .attr("fill", "#838383")
 }
@@ -272,6 +410,8 @@ function addEvents() {
     document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
     //Add channel
     document.getElementById('add-channel-button').addEventListener('click', function() { addChannel(); });
+    //Create filter
+    document.getElementById('create-filter-button').addEventListener('click', function() { createFilter(); });
     //Filter toggle
     document.querySelectorAll('#toggle-filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
     //Delete filter
@@ -280,9 +420,13 @@ function addEvents() {
     document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
     //Message detail toggle
     document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
-    //Graph [anel resize event
-    document.getElementById('quantitative-analysis').addEventListener('click', function() { computeGraph(); });
+    //Graph selection
+    document.querySelectorAll('#graph-selection').forEach(message => { message.addEventListener('click', graphSelect); });
+    //Graph Panel resize event
+    document.getElementById('quantitative-analysis').addEventListener('click', function() { postTimeline(); });
+
 }
 
 addEvents();
-computeGraph();
+const target = document.getElementById("graph-3");
+viewTimeline(target);

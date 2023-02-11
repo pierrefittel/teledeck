@@ -1,37 +1,37 @@
 {% load static %}
 {% for group in groups %}
-<li class="mb-1">
-  <span class="d-flex justify-content-between align-items-center nowrap">
-    <button class="btn btn-toggle d-inline-flex align-items-center border-0 collapsed bg-transparent shadow-none" data-bs-toggle="collapse" data-bs-target="#{{ group.channel_group }}-collapse" aria-expanded="false" id="group-toggle">
-      {{ group.channel_group }}
-    </button>
-    <form class="form-check form-switch">
-      {% if group.group_toggle == True %}
-        <input class="form-check-input shadow-none" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault" checked>
-      {% elif group.group_toggle == False %}
-        <input class="form-check-input shadow-none" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault">
-      {% endif %}
-    </form>
-  </span>
-  <div class="collapse" id="{{ group.channel_group }}-collapse">
-    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-      {% for channel in channels %}
-        {% if channel.channel_group == group.channel_group %}
-          <li>
-            <span class="d-flex justify-content-between nowrap">
-              {% if channel.channel_toggle == True %}
-                <a href="" class="link-dark text-decoration-none rounded ellipsis bg-selected" id="channel">{{ channel.channel_name }}</a>
-              {% elif channel.channel_toggle == False %}
-                <a href="" class="link-dark text-decoration-none rounded ellipsis bg-transparent" id="channel">{{ channel.channel_name }}</a>
-              {% endif %}
-              <a href="" class="bg-transparent" id="delete-channel" value="{{ channel.channel_name }}">
-                <img class="bi pe-none me-2" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
-              </a>
-            </span>
-          </li>
+  <li class="mb-1">
+    <span class="d-flex justify-content-between align-items-center nowrap">
+      <button class="btn btn-toggle d-inline-flex align-items-center border-0 collapsed bg-transparent shadow-none" data-bs-toggle="collapse" data-bs-target="#{{ group.channel_group }}-collapse" aria-expanded="false" id="group-toggle">
+        {{ group.channel_group }}
+      </button>
+      <form class="form-check form-switch">
+        {% if group.group_toggle == True %}
+          <input class="form-check-input shadow-none" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault" checked>
+        {% elif group.group_toggle == False %}
+          <input class="form-check-input shadow-none" id="{{ group.channel_group }}" type="checkbox" role="switch" type="submit" id="flexSwitchCheckDefault">
         {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
-</li>
+      </form>
+    </span>
+    <div class="collapse" id="{{ group.channel_group }}-collapse">
+      <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+        {% for channel in channels %}
+          {% if channel.channel_group == group.channel_group %}
+            <li>
+              <span class="d-flex justify-content-between nowrap">
+                {% if channel.channel_toggle == True %}
+                  <a href="" class="link-dark text-decoration-none rounded ellipsis bg-selected" id="channel">{{ channel.channel_name }}</a>
+                {% elif channel.channel_toggle == False %}
+                  <a href="" class="link-dark text-decoration-none rounded ellipsis bg-transparent" id="channel">{{ channel.channel_name }}</a>
+                {% endif %}
+                <a href="" class="bg-transparent" id="delete-channel" value="{{ channel.channel_name }}">
+                  <img class="bi pe-none me-2" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
+                </a>
+              </span>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </li>
 {% endfor %}

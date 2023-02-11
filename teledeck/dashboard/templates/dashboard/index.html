@@ -14,7 +14,6 @@
     {% endcompress %}
     <script src="{% static 'dashboard/scripts/modules/d3.js' %}"></script>
     <script type="module" src="{% static 'dashboard/scripts/main.js' %}" defer=""></script>
-    <script>const data = {{ messages_data|safe }};</script>
   </head>
   <body>
     {% load crispy_forms_tags %}
@@ -27,47 +26,47 @@
         <hr class="border border-secondary border-1">
         <div class="container-fluid">
           <div class="navbar-nav navbar-dark bg-dark" id="navbarColor01">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
               <li class="nav-item" id="nav-general">
                 <div class="nav-link user-select-none">
-                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/home.svg' %}"></img>
+                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/home.svg' %}"></img>
                   Global view
                 </div>
               </li>
               <li class="nav-item" id="nav-sources">
                 <div class="nav-link user-select-none">
-                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/sources.svg' %}"></img>
+                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/sources.svg' %}"></img>
                   Sources
                 </div>
               </li>
               <li class="nav-item" id="nav-filtres">
                 <div class="nav-link user-select-none">
-                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/search.svg' %}"></img>
+                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/search.svg' %}"></img>
                   Filters
                 </div>
               </li>
               <li class="nav-item" id="nav-messages">
                 <div class="nav-link user-select-none">
-                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/messages.svg' %}"></img>
+                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/messages.svg' %}"></img>
                   Messages
                 </div>
               </li>
               <li class="nav-item" id="nav-details">
                 <div class="nav-link user-select-none">
-                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/details.svg' %}"></img>
+                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/details.svg' %}"></img>
                   Details
                 </div>
               </li>
               <li class="nav-item" id="nav-analysis">
-                <div class="nav-link user-select-none">
-                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/graph-up.svg' %}" style="filter: invert(1)"></img>
+                <div class="nav-link user-select-none pe-2">
+                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/graph-up.svg' %}" style="filter: invert(1)"></img>
                   Quantitative analysis
                 </div>
               </li>
               <li class="nav-item" id="nav-update">
                 <div class="nav-link user-select-none">
-                  <img class="bi pe-none me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/arrow-down-circle.svg' %}" style="filter: invert(1)"></img>
-                  Update
+                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/arrow-down-circle.svg' %}" style="filter: invert(1)"></img>
+                  Update data
                 </div>
               </li>
             </ul>
@@ -79,9 +78,7 @@
             <strong>Landry Pierrefitte</strong>
           </a>
           <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-            <li><a class="dropdown-item" href="#">New project...</a></li>
             <li><a class="dropdown-item" href="#">Settings</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#">Sign out</a></li>
           </ul>
@@ -90,7 +87,7 @@
 
       <div class="b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column flex-shrink-0 p-3 bg-light" style="width: 280px;" id="sources">
+      <div class="d-flex flex-column flex-shrink-0 p-3 bg-light resizable" style="width: 280px;" id="sources">
         <div class="d-flex align-items-center mb-3 mb-md-0 me-md-auto user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/sources.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Sources</span>
@@ -146,11 +143,11 @@
         <div class="row">
           <div class="col">
             <div class="collapse" id="add-source">
-              <form action="add-channel" method="post">
+              <form>
                 {% csrf_token %}
                 {{ add_channel|crispy }}
-                <input class="btn btn-secondary mt-3 fs-3 p-1" type="submit" value="+" data-bs-toggle="collapse" data-bs-target="#add-source" aria-expanded="false" aria-controls="add-source" id="add-channel-button"></input>
               </form>
+              <button class="btn btn-secondary mt-3 fs-3 p-1" aria-expanded="false" aria-controls="add-source" id="add-channel-button">+</button>
             </div>
           </div>
         </div>
@@ -158,7 +155,7 @@
 
       <div class="b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 250px;" id="filtres">
+      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 250px;" id="filtres">
         <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/search.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Filters</span>
@@ -167,8 +164,9 @@
         <form class="mb-2" action="create-filter" method="post">
           {% csrf_token %}
           {{ create_filter|crispy }}
-          <input class="d-flex align-item-center btn btn-secondary mt-3 fs-3 p-1 shadow-none" type="submit" value="+" id="add-button"></input>
         </form>
+        <button class="btn btn-secondary mt-3 fs-3 p-1" aria-expanded="false" aria-controls="add-source" id="create-filter-button">+</button>
+
 
         <hr>
         
@@ -232,7 +230,7 @@
 
       <div class="b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 380px;" id="messages">
+      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 380px;" id="messages">
         <div class="d-flex align-items-center user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/messages.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Messages</span>
@@ -258,7 +256,7 @@
             {% for message in messages %}
               <div value="{{ message.id }}" class="list-group-item list-group-item-action p-2 lh-sm user-select-none" id="message-container" aria-current="true">
                 <div class="d-flex w-100 align-items-center justify-content-between">
-                  <strong class="mb-1 text-truncate smaller">{{ message.channel_name }}</strong>
+                  <strong class="text-truncate smaller">{{ message.channel_name }}</strong>
                   <a href="https://t.me/{{ message.channel_name }}/{{ message.message_id }}" class="mb-1 text-muted text-decoration-none">
                     <small class="text-muted smaller">{{ message.message_date }}</small>
                   </a>
@@ -293,34 +291,65 @@
 
       <div class="b-example-divider b-example-vr"></div>
     
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 500px;" id="details">
+      <div class="d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 500px;" id="details">
         <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/details.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Details</span>
         </div>
         <hr>
-        <div id="message-detail" class="p-4 mx-n3 scrollarea">
-        </div>
+        <div id="message-detail" class="p-4 mx-n3 scrollarea"></div>
       </div>
     
-      <div class="b-example-divider b-example-vr"></div>
+      <div class="d-none b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3" style="width: 700px;" id="quantitative-analysis">
+      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 700px;" id="quantitative-analysis">
         <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/bootstrap-icons/graph-up.svg' %}"></img>
           <span class="fs-4">Quantitative analysis</span>
         </div>
-        <hr>
-        <div class="d-block w-100 h-50 border border-secondary border-1">
-          <div class="d-flex align-items-center user-select-none p-2">
-            <span class="fs-6 ms-auto">Post count</span>
-            <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/bar-chart-line-fill.svg' %}"></img>
+        
+        <div>
+          <hr>
+        </div>
+
+
+        <div class="d-flex h-100 flex-wrap flex-row justify-content-between gap-2">
+          <div class="d-flex flex-column flex-grow-* border border-secondary border-1 graph">
+            <div class="d-flex align-items-center user-select-none p-2">
+              <select class="smaller w-auto ms-auto select text-end form-control" required="" id="graph-selection">
+                <option value="" selected="">---------</option>
+                <option value="1">Post timeline</option>
+                <option value="2">Post view timeline</option>
+                <option value="3">Post share timeline</option>
+              </select>
+            </div>
+            <div id="graph-1" class="d-block p-4 mx-n3 w-100 h-100"></div>
           </div>
-          <div id="post-count" class="d-block p-4 mx-n3 w-100 h-100">
+          <div class="d-flex flex-column flex-grow-* border border-secondary border-1 graph graph-small">
+            <div class="d-flex align-items-center user-select-none p-2">
+              <select class="smaller w-auto ms-auto select text-end form-control" required="" id="graph-selection">
+                <option value="" selected="">---------</option>
+                <option value="1">Post timeline</option>
+                <option value="2">Post view timeline</option>
+                <option value="3">Post share timeline</option>
+              </select>
+            </div>
+            <div id="graph-2" class="d-block p-4 mx-n3 w-100 h-100"></div>
+          </div>
+          <div class="d-flex flex-column flex-grow-* border border-secondary border-1 graph graph-small">
+            <div class="d-flex align-items-center user-select-none p-2">
+              <select class="smaller w-auto ms-auto select text-end form-control" required="" id="graph-selection">
+                <option value="" selected="">---------</option>
+                <option value="1">Post timeline</option>
+                <option value="2">Post view timeline</option>
+                <option value="3">Post share timeline</option>
+              </select>
+            </div>
+            <div id="graph-3" class="d-block p-4 mx-n3 w-100 h-100"></div>
+          </div>
         </div>
       </div>
-      </div>
-    
+
       <div class="d-flex b-example-divider b-example-vr"></div>
 
     </main>

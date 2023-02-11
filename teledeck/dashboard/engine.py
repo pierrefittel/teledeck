@@ -48,7 +48,7 @@ def translateMessage(message):
     return translation
 
 #Retrieve channel messages from each channel
-async def retrieveMessage(limit):
+async def retrieveMessage(API_ID, API_HASH, limit):
     async with TelegramClient('anon', API_ID, API_HASH) as client:
         time_limit = datetime.today() - timedelta(days=limit)
         channels = populateChannelList()
@@ -62,7 +62,7 @@ async def retrieveMessage(limit):
         return messages
 
 #This module check wether a Telegram channel exists and return a boolean response
-async def channelValidation(id):
+async def channelValidation(API_ID, API_HASH, id):
     async with TelegramClient('anon', API_ID, API_HASH) as client:
         try:
             response = await client.get_entity(id)

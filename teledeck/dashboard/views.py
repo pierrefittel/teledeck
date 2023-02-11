@@ -1,35 +1,32 @@
 import csv
 import asyncio
-import pandas
-import datetime
+import json as JSON
 
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.serializers import json
 from django.db.models.functions import Lower
+from django.middleware import csrf
 
 from .engine import writeToDB, retrieveMessage, channelValidation
 from .forms import AddChannel, CreateFilter
 from .models import Message, Channel, Group, Filter, Parameter
 
 def index(request):
+    #Retrieve all parameters
+    parameters = Parameter.objects.get(user_name='admin')
     #Retrieve all groups
     groups = Group.objects.all().order_by('channel_group')
     #Retrieve all channels
     channels = Channel.objects.all().order_by(Lower('channel_name'))
     #Retrieve all messages
-    messages = filter_messages(request, "view")
+    messages = filter_messages(request, "view")[:parameters.message_load_number]
     #Retrieve all filters
     filters = Filter.objects.all()
-    #Retrieve all parameters
-    parameters = Parameter.objects.get(user_name='admin')
     #Channel edit form
     add_channel = AddChannel()
     #Filter form
     create_filter = CreateFilter()
-    #Message data JSON serialization for JS manipulation
-    json_serializer = json.Serializer()
-    messages_data = json_serializer.serialize(Message.objects.all())
     context = {
         'groups': groups,
         'messages': messages,
@@ -37,14 +34,13 @@ def index(request):
         'filters': filters,
         'add_channel': add_channel,
         'create_filter': create_filter,
-        'messages_data': messages_data,
         'parameters': parameters,
         }
     return render(request, 'dashboard/index.html', context)
 
 def update_data(request):
-    limit = Parameter.objects.get(user_name='admin').message_retrieve_limit
-    data = asyncio.run(retrieveMessage(limit))
+    parameters = Parameter.objects.get(user_name='admin')
+    data = asyncio.run(retrieveMessage(parameters.api_id, parameters.api_hash, parameters.message_retrieve_limit))
     writeToDB(data)
     messages = filter_messages(request, "view")
     context = {'messages': messages}
@@ -84,17 +80,25 @@ def toggle_channel(request, channel_name=None):
     return render(request, 'dashboard/sources.html', context)
 
 def add_channel(request):
+    parameters = Parameter.objects.get(user_name='admin')
     if request.method == "POST":
-        channel_name = request.POST['channel_name']
-        response = asyncio.run(channelValidation(channel_name))
+        request_content = JSON.loads(request.body)
+        channel_name = request_content['channel_name']
+        channel_group = request_content['channel_group']
+        response = asyncio.run(channelValidation(parameters.api_id, parameters.api_hash, channel_name))
+        print(response) #Test to be deleted
         if response != 'error':
-            form = AddChannel(request.POST)
-            if form.is_valid():
+            data = {
+                'channel_name': '{}'.format(channel_name),
+                'channel_group': '{}'.format(channel_group)
+            }
+            form = AddChannel(data)
+            if form.is_valid():                
                 form.save()
-                return HttpResponseRedirect('/dashboard')
-    else:
-        form = AddChannel()
-    return HttpResponseRedirect('/dashboard')
+    groups = Group.objects.all().order_by('channel_group')
+    channels = Channel.objects.all().order_by(Lower('channel_name'))
+    context = {'groups': groups, 'channels': channels}
+    return render(request, 'dashboard/sources.html', context)
 
 def delete_channel(request, channel_name=None):
     channel = Channel.objects.get(channel_name=channel_name)
@@ -106,13 +110,27 @@ def delete_channel(request, channel_name=None):
 
 def create_filter(request):
     if request.method == "POST":
-        form = CreateFilter(request.POST)
-        if form.is_valid():
+        request_content = JSON.loads(request.body)
+        text_filter = request_content['text_filter']
+        translation_filter = request_content['translation_filter']
+        view_count = request_content['view_count']
+        share_count = request_content['share_count']
+        start_date = request_content['start_date']
+        end_date = request_content['end_date']
+        data = {
+            'text_filter': '{}'.format(text_filter),
+            'translation_filter': '{}'.format(translation_filter),
+            'view_count': '{}'.format(view_count),
+            'share_count': '{}'.format(share_count),
+            'start_date': '{}'.format(start_date),
+            'end_date': '{}'.format(end_date)
+        }
+        form = CreateFilter(data)
+        if form.is_valid():                
             form.save()
-            return HttpResponseRedirect('/dashboard')
-    else:
-        form = CreateFilter()
-    return HttpResponseRedirect('/dashboard')
+    filters = Filter.objects.all()
+    context = {'filters': filters}
+    return render(request, 'dashboard/filter.html', context)
 
 def toggle_filter(request, filter_id=None):
     filter = Filter.objects.get(pk=filter_id)
@@ -181,12 +199,12 @@ def filter_messages(request, caller=None):
         else:
             messages = messages.order_by('-message_date')
     #Render filtered messages and return them to another function or request depending on caller
-    context = {'messages': messages, 'parameters': parameters}
     if caller == 'view':
         #If caller is another view, return messages as an object
         return messages
     else:
         #If caller is a GET request, return messages as a segment of a webpage
+        context = {'messages': messages, 'parameters': parameters}
         return render(request, 'dashboard/messages.html', context)
 
 def export_CSV(request):
@@ -203,7 +221,13 @@ def export_CSV(request):
             writer.writerow([message.pk, message.channel_name, message.message_id, message.message_text, message.text_translation, message.message_date, message.view_count, message.share_count, message_url])
     return response
 
+def get_message_detail(request, message_id=None):
+    message = Message.objects.get(pk=message_id)
+    context = {'message': message}
+    return render(request, 'dashboard/detail.html', context)
+
 def get_data(request):
+    #Return a dataset for the quantitative analysis module
     if request.method == "GET":
         messages = filter_messages(request, "view")
         json_serializer = json.Serializer()
