@@ -1,5 +1,41 @@
 from django.test import TestCase
-import socket
+from telethon import TelegramClient
+import asyncio
+import os, shutil
 
 # Create your tests here.
 text = "The intense interest aroused in the public by what was known at the time as The Styles Case has now somewhat subsided. Nevertheless, in view of the world-wide notoriety which attended it, I have been asked, both by my friend Poirot and the family themselves, to write an account of the whole story. This, we trust, will effectually silence the sensational rumours which still persist. I will therefore briefly set down the circumstances which led to my being connected with the affair. I had been invalided home from the Front; and, after spending some months in a rather depressing Convalescent Home, was given a month's sick leave. Having no near relations or friends, I was trying to make up my mind what to do, when I ran across John Cavendish. I had seen very little of him for some years. Indeed, I had never known him particularly well. He was a good fifteen years my senior, for one thing, though he hardly looked his forty-five years. As a boy, though, I had often stayed at Styles, his mother's place in Essex. We had a good yarn about old times, and it ended in his inviting me down to Styles to spend my leave there. The mater will be delighted to see you again—after all those years, he added. Your mother keeps well? I asked. Oh, yes. I suppose you know that she has married again? I am afraid I showed my surprise rather plainly. Mrs. Cavendish, who had married John's father when he was a widower with two sons, had been a handsome woman of middle-age as I remembered her. She certainly could not be a day less than seventy now. I recalled her as an energetic, autocratic personality, somewhat inclined to charitable and social notoriety, with a fondness for opening bazaars and playing the Lady Bountiful. She was a most generous woman, and possessed a considerable fortune of her own. Their country-place, Styles Court, had been purchased by Mr. Cavendish early in their married life. He had been completely under his wife's ascendancy, so much so that, on dying, he left the place to her for her lifetime, as well as the larger part of his income; an arrangement that was distinctly unfair to his two sons. Their stepmother, however, had always been most generous to them; indeed, they were so young at the time of their father's remarriage that they always thought of her as their own mother. Lawrence, the younger, had been a delicate youth. He had qualified as a doctor but early relinquished the profession of medicine, and lived at home while pursuing literary ambitions; though his verses never had any marked success. John practised for some time as a barrister, but had finally settled down to the more congenial life of a country squire. He had married two years ago, and had taken his wife to live at Styles, though I entertained a shrewd suspicion that he would have preferred his mother to increase his allowance, which would have enabled him to have a home of his own. Mrs. Cavendish, however, was a lady who liked to make her own plans, and expected other people to fall in with them, and in this case she certainly had the whip hand, namely: the purse strings. John noticed my surprise at the news of his mother's remarriage and smiled rather ruefully. Rotten little bounder too! he said savagely. I can tell you, Hastings, it's making life jolly difficult for us. As for Evie—you remember Evie? The intense interest aroused in the public by what was known at the time as The Styles Case has now somewhat subsided. Nevertheless, in view of the world-wide notoriety which attended it, I have been asked, both by my friend Poirot and the family themselves, to write an account of the whole story. This, we trust, will effectually silence the sensational rumours which still persist. I will therefore briefly set down the circumstances which led to my being connected with the affair. I had been invalided home from the Front; and, after spending some months in a rather depressing Convalescent Home, was given a month's sick leave. Having no near relations or friends, I was trying to make up my mind what to do, when I ran across John Cavendish. I had seen very little of him for some years. Indeed, I had never known him particularly well. He was a good fifteen years my senior, for one thing, though he hardly looked his forty-five years. As a boy, though, I had often stayed at Styles, his mother's place in Essex. We had a good yarn about old times, and it ended in his inviting me down to Styles to spend my leave there. The mater will be delighted to see you again—after all those years, he added. Your mother keeps well? I asked. Oh, yes. I suppose you know that she has married again? I am afraid I showed my surprise rather plainly. Mrs. Cavendish, who had married John's father when he was a widower with two sons, had been a handsome woman of middle-age as I remembered her. She certainly could not be a day less than seventy now. I recalled her as an energetic, autocratic personality, somewhat inclined to charitable and social notoriety, with a fondness for opening bazaars and playing the Lady Bountiful. She was a most generous woman, and possessed a considerable fortune of her own. Their country-place, Styles Court, had been purchased by Mr. Cavendish early in their married life. He had been completely under his wife's ascendancy, so much so that, on dying, he left the place to her for her lifetime, as well as the larger part of his income; an arrangement that was distinctly unfair to his two sons. Their stepmother, however, had always been most generous to them; indeed, they were so young at the time of their father's remarriage that they always thought of her as their own mother. Lawrence, the younger, had been a delicate youth. He had qualified as a doctor but early relinquished the profession of medicine, and lived at home while pursuing literary ambitions; though his verses never had any marked success. John practised for some time as a barrister, but had finally settled down to the more congenial life of a country squire. He had married two years ago, and had taken his wife to live at Styles, though I entertained a shrewd suspicion that he would have preferred his mother to increase his allowance, which would have enabled him to have a home of his own. Mrs. Cavendish, however, was a lady who liked to make her own plans, and expected other people to fall in with them, and in this case she certainly had the whip hand, namely: the purse strings. John noticed my surprise at the news of his mother's remarriage and smiled rather ruefully. Rotten little bounder too! he said savagely. I can tell you, Hastings, it's making life jolly difficult for us. As for Evie—you remember Evie?"
+
+#Parameters
+API_ID = 21437350
+API_HASH = '89452b63dc750b11efad4025ec484845'
+id = "infoimmediate"
+
+#This module check wether a Telegram channel exists and return a boolean response
+async def channelValidation(API_ID, API_HASH, id):
+    async with TelegramClient('anon', API_ID, API_HASH) as client:
+        try:
+            response = await client.get_entity(id)
+        except ValueError:
+            response = 'error'
+        return response
+
+#Retrieve any media associated with a message
+async def mediaDownload(API_ID, API_HASH, channel, messageID):
+    directory = './teledeck/dashboard/static/dashboard/media'
+    #Delete every file in media directory
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+    #Download all medias associated to the message in the directory
+    async with TelegramClient('anon', API_ID, API_HASH) as client:
+        async for message in client.iter_messages(channel, ids=messageID):
+            await message.download_media(file=directory)
+
+asyncio.run(mediaDownload(API_ID, API_HASH, 'EgountchiBehanzinOfficiel', 2733))

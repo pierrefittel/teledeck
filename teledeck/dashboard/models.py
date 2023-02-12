@@ -29,6 +29,7 @@ class Group(models.Model):
         return self.channel_group
 
 class Filter(models.Model):
+    filter_name = models.CharField(max_length=100, blank=True)
     text_filter = models.CharField(max_length=100, blank=True)
     translation_filter = models.CharField(max_length=100, blank=True)
     view_count = models.IntegerField(null=True)
@@ -40,6 +41,7 @@ class Filter(models.Model):
 class Parameter(models.Model):
     #Define a series of parameters related to layout and message retrieval
     user_name = models.CharField(max_length=100, unique=True)
+    user_picture = models.CharField(max_length=200)
     #Define message load sorting order by date
     SORTING_CHOICES = (
         ('UP', 'upward'),

@@ -1,45 +1,74 @@
 import csv
 import asyncio
 import json as JSON
+import ntpath
 
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.serializers import json
 from django.db.models.functions import Lower
-from django.middleware import csrf
+from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
 
-from .engine import writeToDB, retrieveMessage, channelValidation
-from .forms import AddChannel, CreateFilter
+from .engine import writeToDB, retrieveMessage, channelValidation, mediaDownload
+from .forms import UserLogin, AddChannel, CreateFilter
 from .models import Message, Channel, Group, Filter, Parameter
 
-def index(request):
-    #Retrieve all parameters
-    parameters = Parameter.objects.get(user_name='admin')
-    #Retrieve all groups
-    groups = Group.objects.all().order_by('channel_group')
-    #Retrieve all channels
-    channels = Channel.objects.all().order_by(Lower('channel_name'))
-    #Retrieve all messages
-    messages = filter_messages(request, "view")[:parameters.message_load_number]
-    #Retrieve all filters
-    filters = Filter.objects.all()
-    #Channel edit form
-    add_channel = AddChannel()
-    #Filter form
-    create_filter = CreateFilter()
-    context = {
-        'groups': groups,
-        'messages': messages,
-        'channels': channels,
-        'filters': filters,
-        'add_channel': add_channel,
-        'create_filter': create_filter,
-        'parameters': parameters,
+
+def login(request):
+    if request.method == "POST":
+        request_content = JSON.loads(request.body)
+        username = request_content['username']
+        password = request_content['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            dj_login(request, user)
+            return redirect('index')
+        else:
+            return HttpResponseBadRequest(status=405)
+    elif request.method == "GET":
+        #Load login page
+        login_form = UserLogin()
+        context = {
+            'login_form': login_form
         }
-    return render(request, 'dashboard/index.html', context)
+        return render(request, 'dashboard/login.html', context)
+
+def index(request):
+    try:
+        if request.user != None:
+            #Logged in user
+            current_user = request.user
+            #Retrieve all parameters
+            parameters = Parameter.objects.get(user_name=current_user)
+            #Retrieve all groups
+            groups = Group.objects.all().order_by('channel_group')
+            #Retrieve all channels
+            channels = Channel.objects.all().order_by(Lower('channel_name'))
+            #Retrieve all messages
+            messages = filter_messages(request, "view")
+            #Retrieve all filters
+            filters = Filter.objects.all()
+            #Channel edit form
+            add_channel = AddChannel()
+            #Filter form
+            create_filter = CreateFilter()
+            context = {
+                'user': current_user,
+                'groups': groups,
+                'messages': messages,
+                'channels': channels,
+                'filters': filters,
+                'add_channel': add_channel,
+                'create_filter': create_filter,
+                'parameters': parameters,
+                }
+            return render(request, 'dashboard/index.html', context)
+    except:
+        return render(request, 'dashboard/403.html')
 
 def update_data(request):
-    parameters = Parameter.objects.get(user_name='admin')
+    current_user = request.user
+    parameters = Parameter.objects.get(user_name=current_user)
     data = asyncio.run(retrieveMessage(parameters.api_id, parameters.api_hash, parameters.message_retrieve_limit))
     writeToDB(data)
     messages = filter_messages(request, "view")
@@ -66,28 +95,16 @@ def toggle_group(request, channel_group=None):
     context = {'groups': groups, 'channels': channels}
     return render(request, 'dashboard/sources.html', context)
 
-def toggle_channel(request, channel_name=None):
-    channel = Channel.objects.get(channel_name=channel_name)
-    if channel.channel_toggle == True:
-        channel.channel_toggle = False
-        channel.save()
-    elif channel.channel_toggle == False:
-        channel.channel_toggle = True
-        channel.save()
-    groups = Group.objects.all().order_by('channel_group')
-    channels = Channel.objects.all().order_by(Lower('channel_name'))
-    context = {'groups': groups, 'channels': channels}
-    return render(request, 'dashboard/sources.html', context)
-
 def add_channel(request):
-    parameters = Parameter.objects.get(user_name='admin')
+    current_user = request.user
+    parameters = Parameter.objects.get(user_name=current_user)
     if request.method == "POST":
         request_content = JSON.loads(request.body)
         channel_name = request_content['channel_name']
         channel_group = request_content['channel_group']
         response = asyncio.run(channelValidation(parameters.api_id, parameters.api_hash, channel_name))
-        print(response) #Test to be deleted
-        if response != 'error':
+        if response != 'error' and response.restricted != True:
+            #Check if entity name is valid and if entity is public
             data = {
                 'channel_name': '{}'.format(channel_name),
                 'channel_group': '{}'.format(channel_group)
@@ -100,17 +117,29 @@ def add_channel(request):
     context = {'groups': groups, 'channels': channels}
     return render(request, 'dashboard/sources.html', context)
 
+def toggle_channel(request, channel_name=None):
+    channel = Channel.objects.get(channel_name=channel_name)
+    if channel.channel_toggle == True:
+        channel.channel_toggle = False
+        channel.save()
+    elif channel.channel_toggle == False:
+        channel.channel_toggle = True
+        channel.save()
+    channels = Channel.objects.filter(channel_group = channel.channel_group).order_by(Lower('channel_name'))
+    context = {'channels': channels}
+    return render(request, 'dashboard/group.html', context)
+
 def delete_channel(request, channel_name=None):
     channel = Channel.objects.get(channel_name=channel_name)
     channel.delete()
-    groups = Group.objects.all().order_by('channel_group')
-    channels = Channel.objects.all().order_by(Lower('channel_name'))
-    context = {'groups': groups, 'channels': channels}
-    return render(request, 'dashboard/sources.html', context)
+    channels = Channel.objects.filter(channel_group = channel.channel_group).order_by(Lower('channel_name'))
+    context = {'channels': channels}
+    return render(request, 'dashboard/group.html', context)
 
 def create_filter(request):
     if request.method == "POST":
         request_content = JSON.loads(request.body)
+        filter_name = request_content['filter_name']
         text_filter = request_content['text_filter']
         translation_filter = request_content['translation_filter']
         view_count = request_content['view_count']
@@ -118,6 +147,7 @@ def create_filter(request):
         start_date = request_content['start_date']
         end_date = request_content['end_date']
         data = {
+            'filter_name': '{}'.format(filter_name),
             'text_filter': '{}'.format(text_filter),
             'translation_filter': '{}'.format(translation_filter),
             'view_count': '{}'.format(view_count),
@@ -181,23 +211,24 @@ def filter_messages(request, caller=None):
                 #Filter messages from end date
                 messages = messages.filter(message_date__lte = filter.end_date)
     #Sort by date upward or downward based on account parameter
-    parameters = Parameter.objects.get(user_name='admin')
+    current_user = request.user
+    parameters = Parameter.objects.get(user_name=current_user)
     if parameters.message_sort_by_date == 'UP':
         if request.get_full_path() == '/dashboard/sort-by-date':
             #Prevent parameter modification on page reload
-            messages = messages.order_by('-message_date')
+            messages = messages.order_by('-message_date')[:parameters.message_load_number]
             parameters.message_sort_by_date = 'DOWN'
             parameters.save()
         else:
-            messages = messages.order_by('message_date')
+            messages = messages.order_by('message_date')[:parameters.message_load_number]
     elif parameters.message_sort_by_date == 'DOWN':
         if request.get_full_path() == '/dashboard/sort-by-date':
             #Prevent parameter modification on page reload
-            messages = messages.order_by('message_date')
+            messages = messages.order_by('message_date')[:parameters.message_load_number]
             parameters.message_sort_by_date = 'UP'
             parameters.save()
         else:
-            messages = messages.order_by('-message_date')
+            messages = messages.order_by('-message_date')[:parameters.message_load_number]
     #Render filtered messages and return them to another function or request depending on caller
     if caller == 'view':
         #If caller is another view, return messages as an object
@@ -222,9 +253,17 @@ def export_CSV(request):
     return response
 
 def get_message_detail(request, message_id=None):
+    current_user = request.user
+    parameters = Parameter.objects.get(user_name=current_user)
     message = Message.objects.get(pk=message_id)
-    context = {'message': message}
-    return render(request, 'dashboard/detail.html', context)
+    media = asyncio.run(mediaDownload(parameters.api_id, parameters.api_hash, message.channel_name, message.message_id))
+    if media != None:
+        media = 'dashboard/media/{}'.format(ntpath.basename(media))
+        context = {'message': message, 'media': media}
+        return render(request, 'dashboard/detail.html', context)
+    else:
+        context = {'message': message}
+        return render(request, 'dashboard/detail.html', context)
 
 def get_data(request):
     #Return a dataset for the quantitative analysis module
@@ -238,3 +277,12 @@ def get_data(request):
             headers={'Content-Disposition': 'inline'},
         )
     return response
+
+def sign_out(request):
+    if request.method == "GET":
+        current_user = request.user
+        if current_user is not None:
+            dj_logout(request)
+            return redirect('login')
+        else:
+            return redirect('index')

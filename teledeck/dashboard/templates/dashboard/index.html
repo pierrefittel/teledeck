@@ -17,8 +17,9 @@
   </head>
   <body>
     {% load crispy_forms_tags %}
-    <main class="d-flex flex-nowrap" id="main">
-      <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark" style="width: 260px;">
+    <main class="d-flex flex-nowrap vh-100 bg-light" id="main">
+      
+      <div class="d-flex flex-column p-3 bg-dark" style="min-width: 260px;">
         <div class="d-flex align-items-center text-white mb-3 mb-md-0 me-md-auto user-select-none">
           <img class="bi pe-none me-2" width="36" height="36" src="{% static 'dashboard/images/logo.svg' %}"></img>
           <span class="fs-4">Teledeck</span>
@@ -72,22 +73,23 @@
             </ul>
           </div>
         </div>
-        <div class="dropdown mt-auto">
+        <hr class="border border-secondary border-1 mt-auto">
+        <div class="dropdown">
           <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://avatars.githubusercontent.com/u/99245328?s=96&v=4" alt="" width="32" height="32" class="rounded-circle me-2">
-            <strong>Landry Pierrefitte</strong>
+            <img src="{{ parameters.user_picture }}" alt="" width="32" height="32" class="rounded-circle me-2">
+            <strong class="ms-2">{{ user.first_name }} {{ user.last_name }}</strong>
           </a>
           <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
             <li><a class="dropdown-item" href="#">Settings</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Sign out</a></li>
+            <li><a class="dropdown-item" href="sign-out">Sign out</a></li>
           </ul>
         </div>
       </div>
 
-      <div class="b-example-divider b-example-vr"></div>
+      <div class="d-none b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column flex-shrink-0 p-3 bg-light resizable" style="width: 280px;" id="sources">
+      <div class="d-none flex-column flex-shrink-0 p-3 bg-light resizable" style="width: 280px;" id="sources">
         <div class="d-flex align-items-center mb-3 mb-md-0 me-md-auto user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/sources.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Sources</span>
@@ -113,15 +115,15 @@
                   {% for channel in channels %}
                     {% if channel.channel_group == group.channel_group %}
                       <li>
-                        <span class="d-flex justify-content-between nowrap">
+                        <span class="d-flex justify-content-between align-items-center ms-3 mb-1 nowrap">
                           {% if channel.channel_toggle == True %}
-                            <a href="" class="link-dark text-decoration-none rounded ellipsis bg-selected" id="channel">{{ channel.channel_name }}</a>
+                            <div class="link-dark text-decoration-none rounded ellipsis bg-selected user-select-none p-1" id="channel">{{ channel.channel_name }}</div>
                           {% elif channel.channel_toggle == False %}
-                            <a href="" class="link-dark text-decoration-none rounded ellipsis bg-transparent" id="channel">{{ channel.channel_name }}</a>
+                            <div class="link-dark text-decoration-none rounded ellipsis user-select-none p-1" id="channel">{{ channel.channel_name }}</div>
                           {% endif %}
-                          <a href="" class="bg-transparent" id="delete-channel" value="{{ channel.channel_name }}">
+                          <div class="bg-transparent" id="delete-channel" value="{{ channel.channel_name }}">
                             <img class="bi pe-none me-2" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
-                          </a>
+                          </div>
                         </span>
                       </li>
                     {% endif %}
@@ -153,9 +155,9 @@
         </div>
       </div>
 
-      <div class="b-example-divider b-example-vr"></div>
+      <div class="d-none b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 250px;" id="filtres">
+      <div class="d-none flex-column flex-shrink-0 p-3 bg-light resizable" style="width: 250px;" id="filtres">
         <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/search.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Filters</span>
@@ -165,7 +167,7 @@
           {% csrf_token %}
           {{ create_filter|crispy }}
         </form>
-        <button class="btn btn-secondary mt-3 fs-3 p-1" aria-expanded="false" aria-controls="add-source" id="create-filter-button">+</button>
+        <button class="btn btn-secondary mt-3 fs-3 p-1" aria-expanded="false" id="create-filter-button">+</button>
 
 
         <hr>
@@ -173,64 +175,68 @@
         <div id="filter-detail" class="scrollarea">
           {% if filters %}
             {% for filter in filters %}
-              <div class="list-group-item list-group-item-action p-2 lh-sm mb-2 border-1 user-select-none" id="filter" value="{{ filter.pk }}" aria-current="true">
-              <span class="d-flex align-items-center mb-1">
-                <strong class="smaller">Filter {{ filter.pk }}</strong>
-                {% if filter.is_active == True %}
-                <a href="#" class="bg-transparent ms-auto" id="toggle-filter" value="{{ filter.pk }}">
-                  <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/check-square.svg' %}"></img>
-                </a>
-                {% elif filter.is_active == False %}
-                <a href="#" class="bg-transparent ms-auto" id="toggle-filter" value="{{ filter.pk }}">
-                  <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/square.svg' %}"></img>
-                </a>
-                {% endif %}
-                <a href="#" class="bg-transparent ms-2" id="delete-filter" value="{{ filter.pk }}">
-                  <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/trash.svg' %}"></img>
-                </a>
-              </span>
-              {% if filter.text_filter %}
-                <div class="text-muted text-truncate smaller me-1 mb-2">
-                  Text filter : {{ filter.text_filter }}
+            <div class="list-group-item list-group-item-action p-2 lh-sm mb-2 border-1 user-select-none" id="filter" value="{{ filter.pk }}" aria-current="true">
+            <span class="d-flex align-items-center mb-1">
+              {% if filter.filter_name %}
+              <strong class="smaller" id="filter-name">Filter {{ filter.filter_name  }}</strong>
+              {% else %}
+              <strong class="smaller" id="filter-name">Filter {{ filter.pk  }}</strong>
+              {% endif %}
+              {% if filter.is_active == True %}
+              <a href="#" class="bg-transparent ms-auto" id="toggle-filter" value="{{ filter.pk }}">
+                <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/check-square.svg' %}"></img>
+              </a>
+              {% elif filter.is_active == False %}
+              <a href="#" class="bg-transparent ms-auto" id="toggle-filter" value="{{ filter.pk }}">
+                <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/square.svg' %}"></img>
+              </a>
+              {% endif %}
+              <a href="#" class="bg-transparent ms-2" id="delete-filter" value="{{ filter.pk }}">
+                <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/trash.svg' %}"></img>
+              </a>
+            </span>
+            {% if filter.text_filter %}
+              <div class="text-muted text-truncate smaller me-1 mb-2">
+                Text filter : {{ filter.text_filter }}
+              </div>
+            {% endif %}
+            {% if filter.translation_filter %}
+              <div class="text-muted text-truncate smaller me-1 mb-2">
+                Translation filter : {{ filter.translation_filter }}
+              </div>
+            {% endif %}
+            <span class="d-flex align-items-center">
+              {% if filter.view_count %}
+                <div class="text-muted smaller me-1">
+                  above {{ filter.view_count }} views
                 </div>
               {% endif %}
-              {% if filter.translation_filter %}
-                <div class="text-muted text-truncate smaller me-1 mb-2">
-                  Translation filter : {{ filter.translation_filter }}
+              {% if filter.share_count %}
+                <div class="text-muted smaller me-1">
+                  above {{ filter.share_count }} shares
                 </div>
               {% endif %}
-              <span class="d-flex align-items-center">
-                {% if filter.view_count %}
-                  <div class="text-muted smaller me-1">
-                    above {{ filter.view_count }} views
-                  </div>
-                {% endif %}
-                {% if filter.share_count %}
-                  <div class="text-muted smaller me-1">
-                    above {{ filter.share_count }} shares
-                  </div>
-                {% endif %}
-                {% if filter.start_date  %}
-                  <div class="text-muted smaller me-1">
-                    from {{ filter.start_date }}
-                  </div>
-                {% endif %}
-                {% if filter.end_date  %}
-                  <div class="text-muted smaller me-1">
-                    until {{ filter.end_date }}
-                  </div>
-                {% endif %}
-              </span>
-            </div>
-            {% endfor %}
+              {% if filter.start_date  %}
+                <div class="text-muted smaller me-1">
+                  from {{ filter.start_date }}
+                </div>
+              {% endif %}
+              {% if filter.end_date  %}
+                <div class="text-muted smaller me-1">
+                  until {{ filter.end_date }}
+                </div>
+              {% endif %}
+            </span>
+          </div>
+          {% endfor %}
           {% endif %}
         </div>
 
       </div>
 
-      <div class="b-example-divider b-example-vr"></div>
+      <div class="d-none b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 380px;" id="messages">
+      <div class="d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 380px;" id="messages">
         <div class="d-flex align-items-center user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/messages.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Messages</span>
@@ -289,7 +295,7 @@
         </div>
       </div>
 
-      <div class="b-example-divider b-example-vr"></div>
+      <div class="d-none b-example-divider b-example-vr"></div>
     
       <div class="d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 500px;" id="details">
         <div class="d-flex align-items-center flex-shrink-0 user-select-none">
@@ -302,7 +308,7 @@
     
       <div class="d-none b-example-divider b-example-vr"></div>
 
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 700px;" id="quantitative-analysis">
+      <div class="d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable" style="width: 700px;" id="quantitative-analysis">
         <div class="d-flex align-items-center flex-shrink-0 user-select-none">
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/bootstrap-icons/graph-up.svg' %}"></img>
           <span class="fs-4">Quantitative analysis</span>
@@ -313,7 +319,7 @@
         </div>
 
 
-        <div class="d-flex h-100 flex-wrap flex-row justify-content-between gap-2">
+        <div class="d-flex h-100 flex-wrap flex-row justify-content-between gap-2" id="graphs">
           <div class="d-flex flex-column flex-grow-* border border-secondary border-1 graph">
             <div class="d-flex align-items-center user-select-none p-2">
               <select class="smaller w-auto ms-auto select text-end form-control" required="" id="graph-selection">
@@ -350,7 +356,7 @@
         </div>
       </div>
 
-      <div class="d-flex b-example-divider b-example-vr"></div>
+      <div class="d-none b-example-divider b-example-vr"></div>
 
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>

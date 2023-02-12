@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('login', views.login, name='login'),
     path('', views.index, name='index'),
     path('update-data', views.update_data, name='update-data'),
     path('add-channel', views.add_channel, name='add-channel'),
@@ -17,4 +18,5 @@ urlpatterns = [
     path('csv-export', views.export_CSV, name='csv-export'),
     path('get-message-detail/<message_id>', views.get_message_detail, name='get-message-detail'),
     path('get-data', views.get_data, name='get-data'),
+    path('sign-out', views.sign_out, name='sign-out'),
 ]

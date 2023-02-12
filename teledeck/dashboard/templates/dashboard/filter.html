@@ -3,7 +3,11 @@
   {% for filter in filters %}
     <div class="list-group-item list-group-item-action p-2 lh-sm mb-2 border-1 user-select-none" id="filter" value="{{ filter.pk }}" aria-current="true">
     <span class="d-flex align-items-center mb-1">
-      <strong class="smaller">Filter {{ filter.pk }}</strong>
+      {% if filter.filter_name %}
+      <strong class="smaller" id="filter-name">Filter {{ filter.filter_name  }}</strong>
+      {% else %}
+      <strong class="smaller" id="filter-name">Filter {{ filter.pk  }}</strong>
+      {% endif %}
       {% if filter.is_active == True %}
       <a href="#" class="bg-transparent ms-auto" id="toggle-filter" value="{{ filter.pk }}">
         <img class="bi pe-none" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/check-square.svg' %}"></img>

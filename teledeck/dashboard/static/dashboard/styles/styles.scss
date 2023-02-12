@@ -234,7 +234,16 @@ body {
     height: 49%;
   }
 
+  .nav-link {
+    border: solid 1px transparent;
+    border-radius: 6px;
+  }
+
   .nav-link:hover {
     border: solid 1px #d3d3d3;
     border-radius: 6px;
+  }
+
+  #channel:hover {
+    background-color: #bdbdbd;
   }

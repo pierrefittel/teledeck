@@ -14,10 +14,10 @@ function toggleAllPanels() {
     for (let i = 1; i < targetElements.length; i++) {
         if (targetElements[i].attributes.class.value == "d-none b-example-divider b-example-vr") {
             targetElements[i].setAttribute("class", "d-block b-example-divider b-example-vr");
-        } else if (targetElements[i].attributes.class.value == "d-none flex-column flex-shrink-0 p-3 bg-light") {
-            targetElements[i].setAttribute("class", "d-flex flex-column flex-shrink-0 p-3 bg-light");
-        } else if (targetElements[i].attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3") {
-            targetElements[i].setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3");
+        } else if (targetElements[i].attributes.class.value == "d-none flex-column flex-shrink-0 p-3 bg-light resizable") {
+            targetElements[i].setAttribute("class", "d-flex flex-column flex-shrink-0 p-3 bg-light resizable");
+        } else if (targetElements[i].attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable") {
+            targetElements[i].setAttribute("class", "d-flex flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable");
         }
     }
 }
@@ -65,36 +65,36 @@ function toggleChannelGroup(e) {
     document.querySelectorAll('#channel').forEach(channel => { channel.addEventListener('click', toggleChannel); });
     document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
     updateMessages()
-    computeGraph()
+    updateGraphs()
 }
 
 function toggleChannel(e) {
     //Request channel toggle to Django dashboard/views
     const channel = e.target.innerText;
-    const sourceDetail = document.getElementById('source-list');
     const request = `/dashboard/toggle-channel/${channel}`;
     const xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
-    sourceDetail.innerHTML = xmlHttp.responseText;
-    document.querySelectorAll('.form-check-input').forEach(toggle => { toggle.addEventListener('click', toggleChannelGroup); });
-    document.querySelectorAll('#channel').forEach(channel => { channel.addEventListener('click', toggleChannel); });
-    document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
+    const group = e.target.parentElement.parentElement.parentElement;
+    group.innerHTML = xmlHttp.responseText;
+    group.querySelectorAll('#channel').forEach(channel => { channel.addEventListener('click', toggleChannel); });
+    group.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
     updateMessages()
-    computeGraph()
+    updateGraphs()
 }
 
 function deleteChannel(e) {
     const channel = e.target.attributes.value.nodeValue;
-    const sourceDetail = document.getElementById('source-list');
     const request = `/dashboard/delete-channel/${channel}`;
     const xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
-    sourceDetail.innerHTML = xmlHttp.responseText;
-    document.querySelectorAll('.form-check-input').forEach(toggle => { toggle.addEventListener('click', toggleChannelGroup); });
-    document.querySelectorAll('#channel').forEach(channel => { channel.addEventListener('click', toggleChannel); });
-    document.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
+    const group = e.target.parentElement.parentElement.parentElement;
+    group.innerHTML = xmlHttp.responseText;
+    group.querySelectorAll('#channel').forEach(channel => { channel.addEventListener('click', toggleChannel); });
+    group.querySelectorAll('#delete-channel').forEach(channel => { channel.addEventListener('click', deleteChannel); });
+    updateMessages()
+    updateGraphs()
 }
 
 async function addChannel() {
@@ -126,13 +126,14 @@ async function addChannel() {
 
 async function createFilter() {
     //POST request content formatting
+    const filterName = document.getElementById('id_filter_name').value;
     const textFilter = document.getElementById('id_text_filter').value;
     const translationFilter = document.getElementById('id_translation_filter').value
     const vviewCountFilter = document.getElementById('id_view_count').value
     const shareCountFilter = document.getElementById('id_share_count').value
     const startDate = document.getElementById('id_start_date').value
     const endDate = document.getElementById('id_end_date').value
-    const content = `{"text_filter": "${textFilter}", "translation_filter": "${translationFilter}", "view_count": "${vviewCountFilter}", "share_count": "${shareCountFilter}", "start_date": "${startDate}", "end_date": "${endDate}"}`;
+    const content = `{"filter_name": "${filterName}", "text_filter": "${textFilter}", "translation_filter": "${translationFilter}", "view_count": "${vviewCountFilter}", "share_count": "${shareCountFilter}", "start_date": "${startDate}", "end_date": "${endDate}"}`;
     //POST request
     const CSRFToken = document.getElementsByName("csrfmiddlewaretoken")[1].value;
     const URL = '/dashboard/create-filter';
@@ -165,7 +166,7 @@ function toggleFilter(e) {
     document.querySelectorAll('#toggle-filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
     document.querySelectorAll('#delete-filter').forEach(filter => { filter.addEventListener('click', deleteFilter); });
     updateMessages();
-    computeGraph()
+    updateGraphs()
 }
 
 function deleteFilter(e) {
@@ -180,7 +181,7 @@ function deleteFilter(e) {
     document.querySelectorAll('#toggle-filter').forEach(filter => { filter.addEventListener('click', toggleFilter); });
     document.querySelectorAll('#delete-filter').forEach(filter => { filter.addEventListener('click', deleteFilter); });
     updateMessages();
-    computeGraph();
+    updateGraphs();
 }
 
 function updateMessages() {
@@ -209,7 +210,7 @@ function sortByDate() {
 
 function showDetail(e) {
     //Open detail panel if closed
-    const detailPanel = document.getElementById('details')
+    const detailPanel = document.getElementById('details');
     const separator = detailPanel.nextElementSibling;
     if (detailPanel.attributes.class.value == "d-none flex-column align-items-stretch flex-shrink-0 bg-white p-3 resizable") {
         separator.setAttribute("class", "d-block b-example-divider b-example-vr");
@@ -225,16 +226,17 @@ function showDetail(e) {
     messageDetail.innerHTML = xmlHttp.responseText;
 }
 
-
 function graphSelect(e) {
     const selection = e.target.value;
     const target = e.target.parentElement.nextElementSibling;
-    console.log(target);
     if (selection == 1) {
         postTimeline(target);
+    } else if (selection == 2) {
+        viewTimeline(target);
+    } else if (selection == 3) {
+        shareTimeline(target);
     }
 }
-
 
 function postTimeline(target) {
     //Compute and display a graph from filtered messages
@@ -265,9 +267,12 @@ function postTimeline(target) {
     const canvas = target;
     const canvasWidth = canvas.offsetWidth;
     const canvasHeight = canvas.offsetHeight / 1.15;
-    const margin = {top: 20, right: 80, bottom: 70, left: 30};
+    const margin = {top: 20, right: 70, bottom: 70, left: 30};
     const width = canvasWidth - margin.left - margin.right;
     const height = canvasHeight - margin.top - margin.bottom;
+    const startDate = d3.min(dataset, function(d) { return new Date(d.date)});
+    var endDate = d3.max(dataset, function(d) { return new Date(d.date)});
+    endDate = endDate.setDate(endDate.getDate() + 1);
 
     var svg = d3.select(canvas)
         .append("svg")
@@ -277,19 +282,18 @@ function postTimeline(target) {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
         // X axis
-        var x = d3.scaleTime()
-            .domain(d3.extent(dataset, function(d) { return new Date(d.date); }))
-            .range([0, width]);
+        var x = d3.scaleBand()
+            .domain(d3.timeDays(startDate, endDate))
+            .range([0, width])
+            .padding("1")
         var xAxis = d3.axisBottom(x)
             .ticks(d3.timeDay)
             .tickFormat(d3.timeFormat("%Y.%m.%d"));
         svg.append("g")
             .attr("transform", "translate(0, " + height + ")")
             .call(xAxis)
-            .selectAll('line')
-                .attr("transform", "translate(" + (width / dataset.length * 0.35) + ", 0)");
         svg.selectAll("text")
-            .attr("transform", "translate(0, 10)rotate(-90)")
+            .attr("transform", "translate(-12, 10) rotate(-90)")
             .attr("class", "smaller")
             .style("text-anchor", "end")
             .style("font-family", "");
@@ -308,9 +312,10 @@ function postTimeline(target) {
             .append("rect")
                 .attr("x", function(d) { return x(new Date(d.date)); })
                 .attr("y", function(d) { return y(d.frequency); })
-                .attr("width", width / dataset.length * 0.7)
+                .attr("width", width / dataset.length * 0.5)
                 .attr("height", function(d) { return height - y(d.frequency); })
                 .attr("fill", "#838383")
+                .attr("transform", "translate(" + width / dataset.length * -0.25 + ", 0)")
 }
 
 function viewTimeline(target) {
@@ -325,7 +330,6 @@ function viewTimeline(target) {
     const tally = {};
     const dataset = [];
     values.forEach(function(line) {
-        console.log(line.fields.view_count)
         const datetime = d3.isoParse(line.fields.message_date);
         const date = formatTime(datetime);
         tally[date] = (tally[date]||0) + line.fields.view_count;
@@ -334,18 +338,21 @@ function viewTimeline(target) {
         if (tally.hasOwnProperty(date)) {
             dataset.push({
                 date: date,
-                frequency: tally[date]
+                views: tally[date]
             });
         }
     }
 
-    //Post timeline layout from d3.js
+    //View timeline layout from d3.js
     const canvas = target;
     const canvasWidth = canvas.offsetWidth;
     const canvasHeight = canvas.offsetHeight / 1.15;
-    const margin = {top: 20, right: 80, bottom: 70, left: 30};
+    const margin = {top: 20, right: 70, bottom: 70, left: 30};
     const width = canvasWidth - margin.left - margin.right;
     const height = canvasHeight - margin.top - margin.bottom;
+    const startDate = d3.min(dataset, function(d) { return new Date(d.date)});
+    var endDate = d3.max(dataset, function(d) { return new Date(d.date)});
+    endDate = endDate.setDate(endDate.getDate() + 1);
 
     var svg = d3.select(canvas)
         .append("svg")
@@ -355,41 +362,138 @@ function viewTimeline(target) {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
         // X axis
-        var x = d3.scaleTime()
-            .domain(d3.extent(dataset, function(d) { return new Date(d.date); }))
-            .range([0, width]);
+        var x = d3.scaleBand()
+            .domain(d3.timeDays(startDate, endDate))
+            .range([0, width])
+            .padding("1")
         var xAxis = d3.axisBottom(x)
             .ticks(d3.timeDay)
             .tickFormat(d3.timeFormat("%Y.%m.%d"));
         svg.append("g")
             .attr("transform", "translate(0, " + height + ")")
             .call(xAxis)
-            .selectAll('line')
-                .attr("transform", "translate(" + (width / dataset.length * 0.35) + ", 0)");
         svg.selectAll("text")
-            .attr("transform", "translate(0, 10)rotate(-90)")
+            .attr("transform", "translate(-12, 10) rotate(-90)")
             .attr("class", "smaller")
             .style("text-anchor", "end")
             .style("font-family", "");
         // Add Y axis
         var y = d3.scaleLinear()
-            .domain([0, Math.round(d3.max(dataset, function(d) { return d.frequency }))*1.1])
+            .domain([0, Math.round(d3.max(dataset, function(d) { return d.views }))*1.1])
             .range([height, 0]);
+        var yAxis = d3.axisLeft().scale(y)
+            .tickFormat(d3.format(".2s")); 
         svg.append("g")
-            .call(d3.axisLeft(y))
+            .call(yAxis)
             .selectAll("text")
                 .style("font-family", "")
-                .format(".2s");
         //Add bars
         svg.selectAll("mybar")
             .data(dataset)
             .enter()
             .append("rect")
                 .attr("x", function(d) { return x(new Date(d.date)); })
-                .attr("y", function(d) { return y(d.frequency); })
-                .attr("width", width / dataset.length * 0.7)
-                .attr("height", function(d) { return height - y(d.frequency); })
+                .attr("y", function(d) { return y(d.views); })
+                .attr("width", width / dataset.length * 0.5)
+                .attr("height", function(d) { return height - y(d.views); })
                 .attr("fill", "#838383")
+                .attr("transform", "translate(" + width / dataset.length * -0.25 + ", 0)")
+}
+
+function shareTimeline(target) {
+    //Compute and display a graph from filtered messages
+    //Data parsing
+    target.innerHTML = ''
+
+    //Data parsing
+    const data = getFilteredData();
+    const values = JSON.parse(data);
+    const formatTime = d3.timeFormat("%Y.%m.%d");
+    const tally = {};
+    const dataset = [];
+    values.forEach(function(line) {
+        const datetime = d3.isoParse(line.fields.message_date);
+        const date = formatTime(datetime);
+        tally[date] = (tally[date]||0) + line.fields.share_count;
+    });
+    for (const date in tally) {
+        if (tally.hasOwnProperty(date)) {
+            dataset.push({
+                date: date,
+                share: tally[date]
+            });
+        }
+    }
+
+    //Share timeline layout from d3.js
+    const canvas = target;
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = canvas.offsetHeight / 1.15;
+    const margin = {top: 20, right: 70, bottom: 70, left: 30};
+    const width = canvasWidth - margin.left - margin.right;
+    const height = canvasHeight - margin.top - margin.bottom;
+    const startDate = d3.min(dataset, function(d) { return new Date(d.date)});
+    var endDate = d3.max(dataset, function(d) { return new Date(d.date)});
+    endDate = endDate.setDate(endDate.getDate() + 1);
+
+    var svg = d3.select(canvas)
+        .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+        // X axis
+        var x = d3.scaleBand()
+            .domain(d3.timeDays(startDate, endDate))
+            .range([0, width])
+            .padding("1")
+        var xAxis = d3.axisBottom(x)
+            .ticks(d3.timeDay)
+            .tickFormat(d3.timeFormat("%Y.%m.%d"));
+        svg.append("g")
+            .attr("transform", "translate(0, " + height + ")")
+            .call(xAxis)
+        svg.selectAll("text")
+            .attr("transform", "translate(-12, 10) rotate(-90)")
+            .attr("class", "smaller")
+            .style("text-anchor", "end")
+            .style("font-family", "");
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([0, Math.round(d3.max(dataset, function(d) { return d.share }))*1.1])
+            .range([height, 0]);
+        var yAxis = d3.axisLeft().scale(y)
+            .tickFormat(d3.format(".2s")); 
+        svg.append("g")
+            .call(yAxis)
+            .selectAll("text")
+                .style("font-family", "")
+        //Add bars
+        svg.selectAll("mybar")
+            .data(dataset)
+            .enter()
+            .append("rect")
+                .attr("x", function(d) { return x(new Date(d.date)); })
+                .attr("y", function(d) { return y(d.share); })
+                .attr("width", width / dataset.length * 0.5)
+                .attr("height", function(d) { return height - y(d.share); })
+                .attr("fill", "#838383")
+                .attr("transform", "translate(" + width / dataset.length * -0.25 + ", 0)")
+}
+
+function updateGraphs() {
+    const selections = document.querySelectorAll("#graph-selection");
+    for (const selection of selections) {
+        const target = selection.parentElement.nextElementSibling;
+        if (selection.value == 1) {
+            postTimeline(target);
+        } else if (selection.value == 2) {
+            viewTimeline(target);
+        } else if (selection.value == 3) {
+            shareTimeline(target);
+        }
+    }
 }
 
 function addEvents() {
@@ -422,11 +526,9 @@ function addEvents() {
     document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
     //Graph selection
     document.querySelectorAll('#graph-selection').forEach(message => { message.addEventListener('click', graphSelect); });
-    //Graph Panel resize event
-    document.getElementById('quantitative-analysis').addEventListener('click', function() { postTimeline(); });
+    //Graph Panel resize event / graph data update
+    document.getElementById('quantitative-analysis').addEventListener('click', function() { updateGraphs(); });
 
 }
 
 addEvents();
-const target = document.getElementById("graph-3");
-viewTimeline(target);

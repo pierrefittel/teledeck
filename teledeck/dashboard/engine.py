@@ -1,11 +1,9 @@
-from telethon import TelegramClient, utils
+from telethon import TelegramClient
+from telethon import tl
 import sqlite3
 from datetime import datetime, timedelta
 from googletrans import Translator
-
-#Parameters
-API_ID = 21437350
-API_HASH = '89452b63dc750b11efad4025ec484845'
+import os, shutil
 
 #Retrieve channel names from config
 def populateChannelList():
@@ -61,7 +59,7 @@ async def retrieveMessage(API_ID, API_HASH, limit):
                 messages.append(data)
         return messages
 
-#This module check wether a Telegram channel exists and return a boolean response
+#Check wether a Telegram channel exists and return a boolean response
 async def channelValidation(API_ID, API_HASH, id):
     async with TelegramClient('anon', API_ID, API_HASH) as client:
         try:
@@ -69,3 +67,27 @@ async def channelValidation(API_ID, API_HASH, id):
         except ValueError:
             response = 'error'
         return response
+
+#Retrieve any media associated with a message
+async def mediaDownload(API_ID, API_HASH, channel, messageID):
+    directory = './teledeck/dashboard/static/dashboard/media'
+    #Delete every file in media directory
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+    #Download all medias associated to the message in the directory
+    async with TelegramClient('anon', API_ID, API_HASH) as client:
+        async for message in client.iter_messages(channel, ids=messageID):
+            if (type(message.media) == tl.types.MessageMediaPhoto):
+                path = await message.download_media(file=directory)
+                return path
+            else:
+                return None
+
+

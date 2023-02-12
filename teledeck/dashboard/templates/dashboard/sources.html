@@ -18,15 +18,15 @@
         {% for channel in channels %}
           {% if channel.channel_group == group.channel_group %}
             <li>
-              <span class="d-flex justify-content-between nowrap">
+              <span class="d-flex justify-content-between align-items-center ms-3 mb-1 nowrap">
                 {% if channel.channel_toggle == True %}
-                  <a href="" class="link-dark text-decoration-none rounded ellipsis bg-selected" id="channel">{{ channel.channel_name }}</a>
+                  <div class="link-dark text-decoration-none rounded ellipsis bg-selected user-select-none p-1" id="channel">{{ channel.channel_name }}</div>
                 {% elif channel.channel_toggle == False %}
-                  <a href="" class="link-dark text-decoration-none rounded ellipsis bg-transparent" id="channel">{{ channel.channel_name }}</a>
+                  <div class="link-dark text-decoration-none rounded ellipsis user-select-none p-1" id="channel">{{ channel.channel_name }}</div>
                 {% endif %}
-                <a href="" class="bg-transparent" id="delete-channel" value="{{ channel.channel_name }}">
+                <div class="bg-transparent" id="delete-channel" value="{{ channel.channel_name }}">
                   <img class="bi pe-none me-2" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
-                </a>
+                </div>
               </span>
             </li>
           {% endif %}
