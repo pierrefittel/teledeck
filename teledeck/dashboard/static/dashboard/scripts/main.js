@@ -496,6 +496,15 @@ function updateGraphs() {
     }
 }
 
+function openSettings() {
+    const request = `/dashboard/settings`;
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, false);
+    xmlHttp.send( null );
+    const main = document.getElementsByTagName('main')[0];
+    main.innerHTML += xmlHttp.responseText;
+}
+
 function addEvents() {
     //Event listeners
     //Nav bar toggles
@@ -528,7 +537,8 @@ function addEvents() {
     document.querySelectorAll('#graph-selection').forEach(message => { message.addEventListener('click', graphSelect); });
     //Graph Panel resize event / graph data update
     document.getElementById('quantitative-analysis').addEventListener('click', function() { updateGraphs(); });
-
+    //User settings
+    document.getElementById('settings').addEventListener('click', function() { openSettings(); });
 }
 
 addEvents();

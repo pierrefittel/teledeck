@@ -247,3 +247,13 @@ body {
   #channel:hover {
     background-color: #bdbdbd;
   }
+
+  #setting-menu {
+    position: absolute;
+    top: 20%;
+    left: 40%;
+    background-color: #eeeeee;
+    border: solid 2px;
+    border-radius: 6px;
+    box-shadow: 2px 2px 20px rgb(172, 172, 172);
+  }

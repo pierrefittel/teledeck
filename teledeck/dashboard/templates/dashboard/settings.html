@@ -1,0 +1,17 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<div class="d-flex flex-column p-5 border border-2" id="setting-menu">
+    <div class="d-flex flex-row align-items-center justify-content-center">
+        <img class="bi pe-none me-2" width="36" height="36" src="{% static 'dashboard/images/logo.svg' %}"></img>
+        <span class="fs-6">Settings - {{ user.first_name }} {{ user.last_name }}</span>
+    </div>
+    <hr>
+    <div class="d-flex p-2">
+        <form method="post" action="settings">
+            {% csrf_token %}
+            {{ settings_form|crispy }}
+            <button class="btn btn-secondary mt-4 smaller p-1 ps-3 pe-3" type="submit">Save</button>
+        </form>
+    </div>
+  </div>
+</div>

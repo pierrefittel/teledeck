@@ -1,7 +1,7 @@
 from django.forms import ModelForm
 from django.contrib.auth.models import User
 from django import forms
-from .models import Channel, Group, Filter
+from .models import Channel, Group, Filter, Parameter
 
 class AddChannel(ModelForm):
   channel_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': '', 'class': "smaller"}), label='Channel name')
@@ -28,3 +28,13 @@ class UserLogin(ModelForm):
   class Meta:
     model = User
     fields = ['username', 'password']
+
+class UserParameters(ModelForm):
+  user_picture = forms.CharField(widget=forms.TextInput(attrs={'placeholder': '', 'class': "smaller"}), label='User picture path')
+  message_retrieve_limit = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "smaller"}), label='Message retrieve limit (in days)', required=True)
+  message_load_number = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "smaller"}), label='Message load limit', required=True)
+  api_id = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "smaller"}), label='API ID', required=True)
+  api_hash = forms.CharField(widget=forms.TextInput(attrs={'placeholder': '', 'class': "smaller"}), label='API hash')
+  class Meta:
+    model = Parameter
+    fields = ['user_picture', 'message_retrieve_limit', 'message_load_number', 'api_id', 'api_hash']

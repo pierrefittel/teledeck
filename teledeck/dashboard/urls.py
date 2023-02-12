@@ -6,6 +6,7 @@ urlpatterns = [
     path('login', views.login, name='login'),
     path('', views.index, name='index'),
     path('update-data', views.update_data, name='update-data'),
+    path('settings', views.settings, name='settings'),
     path('add-channel', views.add_channel, name='add-channel'),
     path('delete-channel/<channel_name>', views.delete_channel, name='delete-channel'),
     path('create-filter', views.create_filter, name='create-filter'),

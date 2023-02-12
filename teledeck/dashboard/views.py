@@ -10,7 +10,7 @@ from django.db.models.functions import Lower
 from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
 
 from .engine import writeToDB, retrieveMessage, channelValidation, mediaDownload
-from .forms import UserLogin, AddChannel, CreateFilter
+from .forms import UserLogin, AddChannel, CreateFilter, UserParameters
 from .models import Message, Channel, Group, Filter, Parameter
 
 
@@ -74,6 +74,31 @@ def update_data(request):
     messages = filter_messages(request, "view")
     context = {'messages': messages}
     return render(request, 'dashboard/messages.html', context)
+
+def settings(request):
+    if request.method == 'GET':
+        current_user = request.user
+        parameters = Parameter.objects.get(user_name=current_user)
+        settings_form = UserParameters(initial={
+            'user_picture': parameters.user_picture,
+            'message_retrieve_limit': parameters.message_retrieve_limit,
+            'message_load_number': parameters.message_load_number,
+            'api_id': parameters.api_id,
+            'api_hash': parameters.api_hash
+            })
+        context = {
+                'settings_form': settings_form,
+                'parameters': parameters,
+                'user': current_user
+            }
+        return render(request, 'dashboard/settings.html', context)
+    elif request.method == 'POST':
+        current_user = request.user
+        user = Parameter.objects.get(user_name=current_user.username)
+        user_parameters = UserParameters(request.POST, instance=user)
+        if user_parameters.is_valid():
+            user_parameters.save()
+            return redirect('index')
 
 def toggle_group(request, channel_group=None):
     channel_group = Group.objects.get(channel_group=channel_group)
