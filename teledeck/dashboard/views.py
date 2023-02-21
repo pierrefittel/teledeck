@@ -8,8 +8,9 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.serializers import json
 from django.db.models.functions import Lower
 from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
+from django.contrib.postgres.search import SearchVector
 
-from .engine import retrieveMessage, channelValidation, mediaDownload
+from .engine import translateMessage, retrieveMessage, channelValidation, mediaDownload
 from .forms import UserLogin, AddChannel, CreateFilter, UserParameters
 from .models import Message, Channel, Group, Filter, Parameter
 
@@ -76,17 +77,29 @@ def update_data(request):
             message = Message()
             message.channel_name = m['channel_name']
             message.message_id = m['id']
-            message.message_text = m['message']
-            message.text_translation = m['text_translation']
+            try:
+                message.message_text = m['message']
+            except KeyError:
+                message.message_text = 'No message available'
             message.message_date = m['date']
-            message.view_count = m['views']
-            message.share_count = m['forwards']
-            entry = Message.objects.get(channel_name = message.channel_name, message_id = message.message_id)
-            if entry is not None:
+            try:
+                message.view_count = m['views']
+            except KeyError:
+                message.view_count = 0
+            try:
+                message.share_count = m['forwards']
+            except KeyError:
+                message.share_count = 0
+            #Check if message exists, create a new entry or update an existing one
+            try:
+                entry = Message.objects.get(channel_name = message.channel_name, message_id = message.message_id)
                 entry.view_count = message.view_count
                 entry.share_count = message.share_count
                 entry.save()
-            else:
+            except entry.DoesNotExist:
+                text_translation = translateMessage(message.message_text)
+                m.update({"text_translation": text_translation.text})
+                message.text_translation = m['text_translation']
                 message.save()
     messages = filter_messages(request, "view")
     context = {'messages': messages}
@@ -241,7 +254,7 @@ def filter_messages(request, caller=None):
                 messages = messages.filter(message_text__icontains = filter.text_filter)
             if filter.translation_filter:
                 #Filter messages from translation
-                messages = messages.filter(text_translation__icontains = filter.translation_filter)
+                messages = messages.annotate(search=SearchVector('text_translation'),).filter(search=filter.translation_filter)
             if filter.view_count:
                 #Filter messages from views
                 messages = messages.filter(view_count__gte = filter.view_count)

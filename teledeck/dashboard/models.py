@@ -3,8 +3,8 @@ import datetime
 
 class Message(models.Model):
     message_id = models.IntegerField()
-    message_text = models.CharField(max_length=5000)
-    text_translation = models.CharField(max_length=5000)
+    message_text = models.CharField(max_length=10000)
+    text_translation = models.CharField(max_length=10000)
     message_date = models.DateTimeField('date published')
     channel_name = models.CharField(max_length=100)
     view_count = models.IntegerField()

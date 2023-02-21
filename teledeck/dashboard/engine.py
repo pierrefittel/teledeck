@@ -18,8 +18,6 @@ async def retrieveMessage(API_ID, API_HASH, limit, channel):
         async for message in client.iter_messages(channel, reverse=True, offset_date=time_limit):
             data = message.to_dict()
             data.update({"channel_name": channel})
-            text_translation = translateMessage(message.message)
-            data.update({"text_translation": text_translation})
             messages.append(data)
         return messages
 
