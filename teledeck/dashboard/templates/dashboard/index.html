@@ -95,7 +95,7 @@
           <span class="fs-4">Sources</span>
         </div>
         <hr>
-        <ul class="list-unstyled ps-0" id="source-list">
+        <ul class="list-unstyled ps-0 scrollarea" id="source-list">
           {% for group in groups %}
             <li class="mb-1">
               <span class="d-flex justify-content-between align-items-center nowrap">
@@ -117,12 +117,12 @@
                       <li>
                         <span class="d-flex justify-content-between align-items-center ms-3 mb-1 nowrap">
                           {% if channel.channel_toggle == True %}
-                            <div class="link-dark text-decoration-none rounded ellipsis bg-selected user-select-none p-1" id="channel">{{ channel.channel_name }}</div>
+                            <div class="link-dark text-decoration-none rounded ellipsis bg-selected user-select-none ps-2 pe-2 p-1" id="channel">{{ channel.channel_name }}</div>
                           {% elif channel.channel_toggle == False %}
-                            <div class="link-dark text-decoration-none rounded ellipsis user-select-none p-1" id="channel">{{ channel.channel_name }}</div>
+                            <div class="link-dark text-decoration-none rounded ellipsis user-select-none ps-2 pe-2 p-1" id="channel">{{ channel.channel_name }}</div>
                           {% endif %}
-                          <div class="bg-transparent" id="delete-channel" value="{{ channel.channel_name }}">
-                            <img class="bi pe-none me-2" width="14" height="14" src="{% static 'dashboard/images/delete.svg' %}" style="filter: invert(1);"></img>
+                          <div class="d-flex justify-content-between align-items-center p-1 rounded" id="delete-channel" value="{{ channel.channel_name }}">
+                            <img class="bi pe-none me-2" width="14" height="14" src="{% static 'dashboard/images/bootstrap-icons/trash.svg' %}"></img>
                           </div>
                         </span>
                       </li>
@@ -162,13 +162,6 @@
           <img class="bi pe-none me-2" width="30" height="24" src="{% static 'dashboard/images/search.svg' %}" style="filter: invert(1);"></img>
           <span class="fs-4">Filters</span>
         </div>
-        <hr>
-        <form class="mb-2" action="create-filter" method="post">
-          {% csrf_token %}
-          {{ create_filter|crispy }}
-        </form>
-        <button class="btn btn-secondary mt-3 fs-3 p-1" aria-expanded="false" id="create-filter-button">+</button>
-
 
         <hr>
         
@@ -230,6 +223,21 @@
           </div>
           {% endfor %}
           {% endif %}
+        </div>
+
+        <hr>
+        <p>
+          <button class="d-flex btn btn-secondary align-items-center shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#create-filter" aria-expanded="false" aria-controls="create-filter">
+            <span class="flex-grow-1 fs-6 me-3">New filter</span>
+            <img class="bi pe-none" width="16" height="16" src="{% static 'dashboard/images/menu.svg' %}"></img>
+          </button>
+        </p>
+        <div class="collapse" id="create-filter">
+          <form class="mb-2" action="create-filter" method="post">
+            {% csrf_token %}
+            {{ create_filter|crispy }}
+          </form>
+          <button class="btn btn-secondary mt-3 fs-3 p-1" aria-expanded="false" id="create-filter-button">+</button>
         </div>
 
       </div>

@@ -9,7 +9,7 @@ from django.core.serializers import json
 from django.db.models.functions import Lower
 from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
 
-from .engine import writeToDB, retrieveMessage, channelValidation, mediaDownload
+from .engine import retrieveMessage, channelValidation, mediaDownload
 from .forms import UserLogin, AddChannel, CreateFilter, UserParameters
 from .models import Message, Channel, Group, Filter, Parameter
 
@@ -69,8 +69,25 @@ def index(request):
 def update_data(request):
     current_user = request.user
     parameters = Parameter.objects.get(user_name=current_user)
-    data = asyncio.run(retrieveMessage(parameters.api_id, parameters.api_hash, parameters.message_retrieve_limit))
-    writeToDB(data)
+    channels = Channel.objects.all()
+    for channel in channels:
+        messages = asyncio.run(retrieveMessage(parameters.api_id, parameters.api_hash, parameters.message_retrieve_limit, channel.channel_name))
+        for m in messages:
+            message = Message()
+            message.channel_name = m['channel_name']
+            message.message_id = m['id']
+            message.message_text = m['message']
+            message.text_translation = m['text_translation']
+            message.message_date = m['date']
+            message.view_count = m['views']
+            message.share_count = m['forwards']
+            entry = Message.objects.get(channel_name = message.channel_name, message_id = message.message_id)
+            if entry is not None:
+                entry.view_count = message.view_count
+                entry.share_count = message.share_count
+                entry.save()
+            else:
+                message.save()
     messages = filter_messages(request, "view")
     context = {'messages': messages}
     return render(request, 'dashboard/messages.html', context)
@@ -131,7 +148,9 @@ def add_channel(request):
         if response != 'error' and response.restricted != True:
             #Check if entity name is valid and if entity is public
             data = {
+                'channel_id': response.id,
                 'channel_name': '{}'.format(channel_name),
+                'channel_title': '{}'.format(response.title),
                 'channel_group': '{}'.format(channel_group)
             }
             form = AddChannel(data)
@@ -217,22 +236,22 @@ def filter_messages(request, caller=None):
     #Filter messages from filters
     for filter in filters:
         if filter.is_active == True:
-            if filter.text_filter != None:
+            if filter.text_filter:
                 #Filter messages from text
                 messages = messages.filter(message_text__icontains = filter.text_filter)
-            if filter.translation_filter != None:
+            if filter.translation_filter:
                 #Filter messages from translation
                 messages = messages.filter(text_translation__icontains = filter.translation_filter)
-            if filter.view_count != None:
+            if filter.view_count:
                 #Filter messages from views
                 messages = messages.filter(view_count__gte = filter.view_count)
-            if filter.share_count != None:
+            if filter.share_count:
                 #Filter messages from shares
                 messages = messages.filter(share_count__gte = filter.share_count)
-            if filter.start_date != None:
+            if filter.start_date:
                 #Filter messages from start date
                 messages = messages.filter(message_date__gte = filter.start_date)
-            if filter.end_date != None:
+            if filter.end_date:
                 #Filter messages from end date
                 messages = messages.filter(message_date__lte = filter.end_date)
     #Sort by date upward or downward based on account parameter
@@ -282,13 +301,13 @@ def get_message_detail(request, message_id=None):
     parameters = Parameter.objects.get(user_name=current_user)
     message = Message.objects.get(pk=message_id)
     media = asyncio.run(mediaDownload(parameters.api_id, parameters.api_hash, message.channel_name, message.message_id))
-    if media != None:
+    if media:
         media = 'dashboard/media/{}'.format(ntpath.basename(media))
         context = {'message': message, 'media': media}
-        return render(request, 'dashboard/detail.html', context)
+        return  render(request, 'dashboard/detail.html', context)
     else:
         context = {'message': message}
-        return render(request, 'dashboard/detail.html', context)
+        return  render(request, 'dashboard/detail.html', context)
 
 def get_data(request):
     #Return a dataset for the quantitative analysis module

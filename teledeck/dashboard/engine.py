@@ -1,43 +1,8 @@
 from telethon import TelegramClient
 from telethon import tl
-import sqlite3
 from datetime import datetime, timedelta
 from googletrans import Translator
 import os, shutil
-
-#Retrieve channel names from config
-def populateChannelList():
-    channel_list = []
-    connexion = sqlite3.connect('./teledeck/db.sqlite3')
-    cursor = connexion.cursor()
-    data = cursor.execute("SELECT * FROM dashboard_channel")
-    channels = data.fetchall()
-    for i in channels:
-        channel_list.append(i[1])
-    return channel_list
-
-#Write data to Django DB
-def writeToDB(data):
-    connexion = sqlite3.connect('./teledeck/db.sqlite3')
-    cursor = connexion.cursor()
-    for msg in data:
-        try:
-            message_text = msg['message']
-            text_translation = translateMessage(msg['message'])
-            views = msg['views']
-            shares = msg['forwards']
-        except KeyError:
-            message_text = 'No message available'
-            text_translation.text = 'No translation available'
-            views = 0
-            shares = 0
-        query = """REPLACE INTO dashboard_message
-        (message_text, text_translation, message_date, channel_name, view_count, share_count, message_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?);"""
-        data_tuple = (message_text, text_translation.text, msg['date'], msg['channel_name'], views, shares, msg['id'])
-        cursor.execute(query, data_tuple)
-        connexion.commit()
-    cursor.close()
 
 #Translate message through Google Translate API - message size limited
 def translateMessage(message):
@@ -46,20 +11,19 @@ def translateMessage(message):
     return translation
 
 #Retrieve channel messages from each channel
-async def retrieveMessage(API_ID, API_HASH, limit):
+async def retrieveMessage(API_ID, API_HASH, limit, channel):
     async with TelegramClient('anon', API_ID, API_HASH) as client:
         time_limit = datetime.today() - timedelta(days=limit)
-        channels = populateChannelList()
         messages = []
-        for channel in channels:
-            channel_name = {"channel_name": channel}
-            async for message in client.iter_messages(channel, reverse=True, offset_date=time_limit):
-                data = message.to_dict()
-                data.update(channel_name)
-                messages.append(data)
+        async for message in client.iter_messages(channel, reverse=True, offset_date=time_limit):
+            data = message.to_dict()
+            data.update({"channel_name": channel})
+            text_translation = translateMessage(message.message)
+            data.update({"text_translation": text_translation})
+            messages.append(data)
         return messages
 
-#Check wether a Telegram channel exists and return a boolean response
+#Check whether a Telegram channel exists and return details
 async def channelValidation(API_ID, API_HASH, id):
     async with TelegramClient('anon', API_ID, API_HASH) as client:
         try:

@@ -257,3 +257,15 @@ body {
     border-radius: 6px;
     box-shadow: 2px 2px 20px rgb(172, 172, 172);
   }
+
+  #delete-channel:hover {
+    filter: invert(.5);
+  }
+
+  #div_id_channel_id {
+    display: none;
+  }
+
+  #div_id_channel_title {
+    display: none;
+  }

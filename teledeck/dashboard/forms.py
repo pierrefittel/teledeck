@@ -8,7 +8,7 @@ class AddChannel(ModelForm):
   channel_group = forms.ModelChoiceField(queryset=Group.objects.all(), widget=forms.Select(attrs={'class': "smaller mb-1"}), label='Channel group')
   class Meta:
     model = Channel
-    fields = ['channel_name', 'channel_group']
+    fields = ['channel_id', 'channel_name', 'channel_title', 'channel_group']
 
 class CreateFilter(ModelForm):
   filter_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Filter name', "class": "smaller mb-2"}), label='', required=False)

@@ -281,7 +281,7 @@ function postTimeline(target) {
         .append("g")
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
-        // X axis
+        //X axis
         var x = d3.scaleBand()
             .domain(d3.timeDays(startDate, endDate))
             .range([0, width])
@@ -297,7 +297,7 @@ function postTimeline(target) {
             .attr("class", "smaller")
             .style("text-anchor", "end")
             .style("font-family", "");
-        // Add Y axis
+        //Add Y axis
         var y = d3.scaleLinear()
             .domain([0, Math.round(d3.max(dataset, function(d) { return d.frequency }))*1.1])
             .range([height, 0]);
@@ -305,6 +305,16 @@ function postTimeline(target) {
             .call(d3.axisLeft(y))
             .selectAll("text")
                 .style("font-family", "")
+        //Add tootip
+        var tooltip = d3.select(canvas)
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "black")
+            .style("color", "white")
+            .style("border-radius", "4px")
+            .style("padding", "6px")
+            .style("font-size", ".7em")    
         //Add bars
         svg.selectAll("mybar")
             .data(dataset)
@@ -316,6 +326,17 @@ function postTimeline(target) {
                 .attr("height", function(d) { return height - y(d.frequency); })
                 .attr("fill", "#838383")
                 .attr("transform", "translate(" + width / dataset.length * -0.25 + ", 0)")
+                .on("mouseover", function(e, d) {
+                    var pageX = e.pageX;
+                    var pageY = e.pageY;
+                    tooltip.style("opacity", 1)
+                       .html(d.frequency)
+                       .style("left", pageX - 25 + "px")
+                       .style("top", pageY - 40 + "px")
+                    })
+                .on("mouseout", function(d) {
+                    tooltip.style("opacity", 0)
+                })
 }
 
 function viewTimeline(target) {
@@ -387,6 +408,16 @@ function viewTimeline(target) {
             .call(yAxis)
             .selectAll("text")
                 .style("font-family", "")
+        //Add tootip
+        var tooltip = d3.select(canvas)
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "black")
+            .style("color", "white")
+            .style("border-radius", "4px")
+            .style("padding", "6px")
+            .style("font-size", ".7em")    
         //Add bars
         svg.selectAll("mybar")
             .data(dataset)
@@ -398,6 +429,17 @@ function viewTimeline(target) {
                 .attr("height", function(d) { return height - y(d.views); })
                 .attr("fill", "#838383")
                 .attr("transform", "translate(" + width / dataset.length * -0.25 + ", 0)")
+                .on("mouseover", function(e, d) {
+                    var pageX = e.pageX;
+                    var pageY = e.pageY;
+                    tooltip.style("opacity", 1)
+                       .html(d.views)
+                       .style("left", pageX - 25 + "px")
+                       .style("top", pageY - 40 + "px")
+                    })
+                .on("mouseout", function(d) {
+                    tooltip.style("opacity", 0)
+                })
 }
 
 function shareTimeline(target) {
@@ -469,6 +511,16 @@ function shareTimeline(target) {
             .call(yAxis)
             .selectAll("text")
                 .style("font-family", "")
+        //Add tootip
+        var tooltip = d3.select(canvas)
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "black")
+            .style("color", "white")
+            .style("border-radius", "4px")
+            .style("padding", "6px")
+            .style("font-size", ".7em")   
         //Add bars
         svg.selectAll("mybar")
             .data(dataset)
@@ -480,6 +532,17 @@ function shareTimeline(target) {
                 .attr("height", function(d) { return height - y(d.share); })
                 .attr("fill", "#838383")
                 .attr("transform", "translate(" + width / dataset.length * -0.25 + ", 0)")
+                .on("mouseover", function(e, d) {
+                    var pageX = e.pageX;
+                    var pageY = e.pageY;
+                    tooltip.style("opacity", 1)
+                       .html(d.share)
+                       .style("left", pageX - 25 + "px")
+                       .style("top", pageY - 40 + "px")
+                    })
+                .on("mouseout", function(d) {
+                    tooltip.style("opacity", 0)
+                })
 }
 
 function updateGraphs() {
@@ -513,7 +576,7 @@ function addEvents() {
     document.getElementById('nav-filtres').addEventListener('click', function() { collapse('filtres'); });
     document.getElementById('nav-messages').addEventListener('click', function() { collapse('messages'); });
     document.getElementById('nav-details').addEventListener('click', function() { collapse('details'); });
-    document.getElementById('nav-analysis').addEventListener('click', function() { collapse('quantitative-analysis'); computeGraph() });
+    document.getElementById('nav-analysis').addEventListener('click', function() { collapse('quantitative-analysis'); });
     document.getElementById('nav-update').addEventListener('click', function() { updateData(); });
     //Channel group toggle
     document.querySelectorAll('.form-check-input').forEach(toggle => { toggle.addEventListener('click', toggleChannelGroup); });
