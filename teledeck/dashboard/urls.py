@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from . import views
 
@@ -21,3 +22,5 @@ urlpatterns = [
     path('get-data', views.get_data, name='get-data'),
     path('sign-out', views.sign_out, name='sign-out'),
 ]
+
+urlpatterns += staticfiles_urlpatterns()

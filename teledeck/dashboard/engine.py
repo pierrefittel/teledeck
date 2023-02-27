@@ -32,7 +32,7 @@ async def channelValidation(API_ID, API_HASH, id):
 
 #Retrieve any media associated with a message
 async def mediaDownload(API_ID, API_HASH, channel, messageID):
-    directory = './teledeck/dashboard/static/dashboard/media'
+    directory = './static/dashboard/media'
     #Delete every file in media directory
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
