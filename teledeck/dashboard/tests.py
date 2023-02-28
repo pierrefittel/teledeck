@@ -1,5 +1,6 @@
 from django.test import TestCase
 from engine import channelValidation
+from telethon import TelegramClient
 import asyncio
 
 # Create your tests here.
@@ -9,9 +10,12 @@ text = "The intense interest aroused in the public by what was known at the time
 #Parameters
 API_ID = 21437350
 API_HASH = '89452b63dc750b11efad4025ec484845'
-id = ['russosphere','boris_rozhin','rybar','infantmilitario','rlz_the_kraken','tsargradtv','margaritasimonyan','MariaVladimirovnaZakharova','EgountchiBehanzinOfficiel','Kemi_Seba_Officiel','SEPAHCYBERY','infoimmediate','orchestra_w']
+phone_number = '+33764079625'
 
-for i in id:
-    response = asyncio.run(channelValidation(API_ID, API_HASH, i))
-    print(response.id)
-    print(response.title)
+async def sendCodeRequest(API_ID, API_HASH, phone_number):
+    async with TelegramClient('anon', API_ID, API_HASH) as client:
+        response = await client.sign_in(phone_number)
+        return response
+
+response = asyncio.run(sendCodeRequest(API_ID, API_HASH, phone_number))
+print(response)

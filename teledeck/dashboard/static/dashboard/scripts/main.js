@@ -604,4 +604,14 @@ function addEvents() {
     document.getElementById('settings').addEventListener('click', function() { openSettings(); });
 }
 
+function checkAPIAuth() {
+    //Check if user is correctly logged in Telegram API
+    const request = `/dashboard/check-api-auth`;
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, true);
+    xmlHttp.send( null );
+    console.log(xmlHttp.responseText);
+}
+
 addEvents();
+checkAPIAuth();

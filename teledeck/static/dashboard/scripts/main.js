@@ -220,7 +220,7 @@ function showDetail(e) {
     const index = e.target.attributes.value.nodeValue;
     const request = `/dashboard/get-message-detail/${index}`;
     const xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", request, true);
+    xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
     const messageDetail = document.getElementById('message-detail');
     messageDetail.innerHTML = xmlHttp.responseText;
@@ -604,4 +604,16 @@ function addEvents() {
     document.getElementById('settings').addEventListener('click', function() { openSettings(); });
 }
 
+function checkAPIAuth() {
+    //Check if user is correctly logged in Telegram API
+    console.log('OK1');
+    const request = `/dashboard/check-api-auth`;
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, true);
+    xmlHttp.send( null );
+    console.log('OK2');
+    console.log(xmlHttp.responseText);
+}
+
 addEvents();
+checkAPIAuth();

@@ -10,7 +10,7 @@ from django.db.models.functions import Lower
 from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
 from django.contrib.postgres.search import SearchVector
 
-from .engine import translateMessage, retrieveMessage, channelValidation, mediaDownload
+from .engine import translateMessage, retrieveMessage, channelValidation, mediaDownload, sendCodeRequest
 from .forms import UserLogin, AddChannel, CreateFilter, UserParameters
 from .models import Message, Channel, Group, Filter, Parameter
 
@@ -67,6 +67,17 @@ def index(request):
     except:
         return render(request, 'dashboard/403.html')
 
+def check_API_auth(request):
+    current_user = request.user
+    parameters = Parameter.objects.get(user_name=current_user)
+    content = asyncio.run(sendCodeRequest(parameters.api_id, parameters.api_hash, parameters.user_phone))
+    response = HttpResponse(
+            content,
+            content_type='application/json',
+            headers={'Content-Disposition': 'inline'},
+        )
+    return response
+
 def update_data(request):
     current_user = request.user
     parameters = Parameter.objects.get(user_name=current_user)
@@ -111,6 +122,7 @@ def settings(request):
         parameters = Parameter.objects.get(user_name=current_user)
         settings_form = UserParameters(initial={
             'user_picture': parameters.user_picture,
+            'user_phone': parameters.user_phone,
             'message_retrieve_limit': parameters.message_retrieve_limit,
             'message_load_number': parameters.message_load_number,
             'api_id': parameters.api_id,

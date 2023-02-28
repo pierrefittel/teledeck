@@ -42,6 +42,7 @@ class Parameter(models.Model):
     #Define a series of parameters related to layout and message retrieval
     user_name = models.CharField(max_length=100, unique=True)
     user_picture = models.CharField(max_length=200)
+    user_phone = models.CharField(max_length=20)
     #Define message load sorting order by date
     SORTING_CHOICES = (
         ('UP', 'upward'),

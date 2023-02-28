@@ -32,7 +32,7 @@ async def channelValidation(API_ID, API_HASH, id):
 
 #Retrieve any media associated with a message
 async def mediaDownload(API_ID, API_HASH, channel, messageID):
-    directory = './static/dashboard/media'
+    directory = './teledeck/dashboard/static/dashboard/media'
     #Delete every file in media directory
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
@@ -52,4 +52,10 @@ async def mediaDownload(API_ID, API_HASH, channel, messageID):
             else:
                 return None
 
-
+async def sendCodeRequest(API_ID, API_HASH, phone_number):
+    async with TelegramClient('anon', API_ID, API_HASH) as client:
+        await client.start()
+    
+async def sendCode(API_ID, API_HASH, phone_number, code):
+    client = TelegramClient('anon', API_ID, API_HASH)
+    await client.sign_in(phone_number, code)

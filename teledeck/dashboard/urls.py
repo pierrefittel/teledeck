@@ -6,6 +6,7 @@ from . import views
 urlpatterns = [
     path('login', views.login, name='login'),
     path('', views.index, name='index'),
+    path('check-api-auth', views.check_API_auth, name='check-api-auth'),
     path('update-data', views.update_data, name='update-data'),
     path('settings', views.settings, name='settings'),
     path('add-channel', views.add_channel, name='add-channel'),
