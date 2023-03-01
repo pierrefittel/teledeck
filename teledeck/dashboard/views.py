@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.serializers import json
 from django.db.models.functions import Lower
+from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
 from django.contrib.postgres.search import SearchVector
 
@@ -79,12 +80,21 @@ def check_API_auth(request):
     return response
 
 def update_data(request):
+    #Remove double entries if any
+    entries = Message.objects.all()
+    for entry in entries:
+        query = entries.filter(channel_name__exact=entry.channel_name, message_id__exact=entry.message_id)
+        if len(query) > 1:
+            print(query)
+            for q in query[1:]:
+                q.delete()
     current_user = request.user
     parameters = Parameter.objects.get(user_name=current_user)
     channels = Channel.objects.all()
     for channel in channels:
         messages = asyncio.run(retrieveMessage(parameters.api_id, parameters.api_hash, parameters.message_retrieve_limit, channel.channel_name))
         for m in messages:
+            print(m['channel_name'], m['id'])
             message = Message()
             message.channel_name = m['channel_name']
             message.message_id = m['id']
@@ -108,10 +118,14 @@ def update_data(request):
                 entry.share_count = message.share_count
                 entry.save()
             except entry.DoesNotExist:
-                text_translation = translateMessage(message.message_text)
-                m.update({"text_translation": text_translation.text})
-                message.text_translation = m['text_translation']
-                message.save()
+                try:
+                    text_translation = translateMessage(message.message_text)
+                    m.update({"text_translation": text_translation.text})
+                    message.text_translation = m['text_translation']
+                    message.save()
+                except IntegrityError:
+                    pass
+
     messages = filter_messages(request, "view")
     context = {'messages': messages}
     return render(request, 'dashboard/messages.html', context)
@@ -334,7 +348,7 @@ def get_message_detail(request, message_id=None):
         context = {'message': message}
         return  render(request, 'dashboard/detail.html', context)
 
-def get_data(request):
+def get_data(request, caller='view'):
     #Return a dataset for the quantitative analysis module
     if request.method == "GET":
         messages = filter_messages(request, "view")
