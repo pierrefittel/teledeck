@@ -267,7 +267,7 @@ function postTimeline(target) {
     const canvas = target;
     const canvasWidth = canvas.offsetWidth;
     const canvasHeight = canvas.offsetHeight / 1.15;
-    const margin = {top: 20, right: 70, bottom: 70, left: 30};
+    const margin = {top: 20, right: 70, bottom: 70, left: 40};
     const width = canvasWidth - margin.left - margin.right;
     const height = canvasHeight - margin.top - margin.bottom;
     const startDate = d3.min(dataset, function(d) { return new Date(d.date)});
@@ -368,7 +368,7 @@ function viewTimeline(target) {
     const canvas = target;
     const canvasWidth = canvas.offsetWidth;
     const canvasHeight = canvas.offsetHeight / 1.15;
-    const margin = {top: 20, right: 70, bottom: 70, left: 30};
+    const margin = {top: 20, right: 70, bottom: 70, left: 40};
     const width = canvasWidth - margin.left - margin.right;
     const height = canvasHeight - margin.top - margin.bottom;
     const startDate = d3.min(dataset, function(d) { return new Date(d.date)});
@@ -471,7 +471,7 @@ function shareTimeline(target) {
     const canvas = target;
     const canvasWidth = canvas.offsetWidth;
     const canvasHeight = canvas.offsetHeight / 1.15;
-    const margin = {top: 20, right: 70, bottom: 70, left: 30};
+    const margin = {top: 20, right: 70, bottom: 70, left: 40};
     const width = canvasWidth - margin.left - margin.right;
     const height = canvasHeight - margin.top - margin.bottom;
     const startDate = d3.min(dataset, function(d) { return new Date(d.date)});
@@ -605,10 +605,10 @@ function addEvents() {
 }
 
 function checkAPIAuth() {
-    //Check if user is correctly logged in Telegram API
+    //Check if user is correctly logged in Telegram API. Work in progress
     const request = `/dashboard/check-api-auth`;
     const xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", request, true);
+    xmlHttp.open("GET", request, false);
     xmlHttp.send( null );
     console.log(xmlHttp.responseText);
 }

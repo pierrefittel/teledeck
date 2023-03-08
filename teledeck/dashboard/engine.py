@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 from googletrans import Translator
 import os, shutil
 
-#Translate message through Google Translate API - message size limited
 def translateMessage(message):
+    #Translate message through Google Translate API - message size limited
     translator = Translator()
     translation = translator.translate(message, dest='fr')
     return translation
 
-#Retrieve channel messages from each channel
 async def retrieveMessage(API_ID, API_HASH, limit, channel):
+    #Retrieve channel messages from each channel
     async with TelegramClient('anon', API_ID, API_HASH) as client:
         time_limit = datetime.today() - timedelta(days=limit)
         messages = []
@@ -21,8 +21,8 @@ async def retrieveMessage(API_ID, API_HASH, limit, channel):
             messages.append(data)
         return messages
 
-#Check whether a Telegram channel exists and return details
 async def channelValidation(API_ID, API_HASH, id):
+    #Check whether a Telegram channel exists and return details
     async with TelegramClient('anon', API_ID, API_HASH) as client:
         try:
             response = await client.get_entity(id)
@@ -30,9 +30,9 @@ async def channelValidation(API_ID, API_HASH, id):
             response = 'error'
         return response
 
-#Retrieve any media associated with a message
 async def mediaDownload(API_ID, API_HASH, channel, messageID):
-    directory = './teledeck/dashboard/static/dashboard/media'
+    #Retrieve any media associated with a message
+    directory = './dashboard/static/dashboard/media'
     #Delete every file in media directory
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
@@ -52,10 +52,15 @@ async def mediaDownload(API_ID, API_HASH, channel, messageID):
             else:
                 return None
 
-async def sendCodeRequest(API_ID, API_HASH, phone_number):
+async def sendCodeRequest(API_ID, API_HASH, phone_number, password):
     async with TelegramClient('anon', API_ID, API_HASH) as client:
-        await client.start()
+        if client.is_connected() == True:
+            return client.is_connected()
+        elif client.is_connected() == False:
+            await client.start(phone_number, password)
     
+
 async def sendCode(API_ID, API_HASH, phone_number, code):
+    #Not used
     client = TelegramClient('anon', API_ID, API_HASH)
     await client.sign_in(phone_number, code)

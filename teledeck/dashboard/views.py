@@ -6,6 +6,7 @@ import ntpath
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.serializers import json
+from django.db.models import Q
 from django.db.models.functions import Lower
 from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate, login as dj_login, logout as dj_logout
@@ -71,13 +72,12 @@ def index(request):
 def check_API_auth(request):
     current_user = request.user
     parameters = Parameter.objects.get(user_name=current_user)
-    content = asyncio.run(sendCodeRequest(parameters.api_id, parameters.api_hash, parameters.user_phone))
-    response = HttpResponse(
-            content,
-            content_type='application/json',
-            headers={'Content-Disposition': 'inline'},
-        )
-    return response
+    content = asyncio.run(sendCodeRequest(parameters.api_id, parameters.api_hash, parameters.user_phone, '30Ariakeno'))
+    return HttpResponse(content)
+
+def API_auth(request):
+    #Not used
+    return HttpResponse(content)
 
 def update_data(request):
     #Remove double entries if any
@@ -280,7 +280,7 @@ def filter_messages(request, caller=None):
                 messages = messages.filter(message_text__icontains = filter.text_filter)
             if filter.translation_filter:
                 #Filter messages from translation
-                messages = messages.annotate(search=SearchVector('text_translation'),).filter(search=filter.translation_filter)
+                messages = messages.filter(message_text__icontains = filter.translation_filter)
             if filter.view_count:
                 #Filter messages from views
                 messages = messages.filter(view_count__gte = filter.view_count)
