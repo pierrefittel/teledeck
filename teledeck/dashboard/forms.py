@@ -33,9 +33,8 @@ class UserParameters(ModelForm):
   user_picture = forms.CharField(widget=forms.TextInput(attrs={'placeholder': '', 'class': "smaller"}), label='User picture path')
   user_phone = forms.CharField(widget=forms.TextInput(attrs={'placeholder': '', 'class': "smaller"}), label='User phone number')
   message_retrieve_limit = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "smaller"}), label='Message retrieve limit (in days)', required=True)
-  message_load_number = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "smaller"}), label='Message load limit', required=True)
   api_id = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "smaller"}), label='API ID', required=True)
   api_hash = forms.CharField(widget=forms.TextInput(attrs={'placeholder': '', 'class': "smaller"}), label='API hash')
   class Meta:
     model = Parameter
-    fields = ['user_picture', 'user_phone', 'message_retrieve_limit', 'message_load_number', 'api_id', 'api_hash']
+    fields = ['user_picture', 'user_phone', 'message_retrieve_limit', 'api_id', 'api_hash']

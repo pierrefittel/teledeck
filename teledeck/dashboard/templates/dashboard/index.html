@@ -27,46 +27,46 @@
         <hr class="border border-secondary border-1">
         <div class="container-fluid">
           <div class="navbar-nav navbar-dark bg-dark" id="navbarColor01">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-3">
               <li class="nav-item" id="nav-general">
-                <div class="nav-link user-select-none">
-                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/home.svg' %}"></img>
+                <div class="d-flex nav-link user-select-none align-items-center">
+                  <img class="bi pe-none ms-2 me-2" width="22" height="22" src="{% static 'dashboard/images/home.svg' %}"></img>
                   Global view
                 </div>
               </li>
               <li class="nav-item" id="nav-sources">
-                <div class="nav-link user-select-none">
-                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/sources.svg' %}"></img>
+                <div class="d-flex nav-link user-select-none align-items-center">
+                  <img class="bi pe-none ms-2 me-2" width="22" height="22" src="{% static 'dashboard/images/sources.svg' %}"></img>
                   Sources
                 </div>
               </li>
               <li class="nav-item" id="nav-filtres">
-                <div class="nav-link user-select-none">
-                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/search.svg' %}"></img>
+                <div class="d-flex nav-link user-select-none align-items-center">
+                  <img class="bi pe-none ms-2 me-2" width="22" height="22" src="{% static 'dashboard/images/search.svg' %}"></img>
                   Filters
                 </div>
               </li>
               <li class="nav-item" id="nav-messages">
-                <div class="nav-link user-select-none">
-                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/messages.svg' %}"></img>
+                <div class="d-flex nav-link user-select-none align-items-center">
+                  <img class="bi pe-none ms-2 me-2" width="22" height="22" src="{% static 'dashboard/images/messages.svg' %}"></img>
                   Messages
                 </div>
               </li>
               <li class="nav-item" id="nav-details">
-                <div class="nav-link user-select-none">
-                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/details.svg' %}"></img>
+                <div class="d-flex nav-link user-select-none align-items-center">
+                  <img class="bi pe-none ms-2 me-2" width="22" height="22" src="{% static 'dashboard/images/details.svg' %}"></img>
                   Details
                 </div>
               </li>
               <li class="nav-item" id="nav-analysis">
-                <div class="nav-link user-select-none pe-2">
-                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/graph-up.svg' %}" style="filter: invert(1)"></img>
+                <div class="d-flex nav-link user-select-none align-items-center">
+                  <img class="bi pe-none ms-2 me-2" width="22" height="22" src="{% static 'dashboard/images/bootstrap-icons/graph-up.svg' %}" style="filter: invert(1)"></img>
                   Quantitative analysis
                 </div>
               </li>
               <li class="nav-item" id="nav-update">
-                <div class="nav-link user-select-none">
-                  <img class="bi pe-none ms-2 me-2" width="16" height="16" src="{% static 'dashboard/images/bootstrap-icons/arrow-down-circle.svg' %}" style="filter: invert(1)"></img>
+                <div class="d-flex nav-link user-select-none align-items-center">
+                  <img class="bi pe-none ms-2 me-2" width="22" height="22" src="{% static 'dashboard/images/bootstrap-icons/arrow-down-circle.svg' %}" style="filter: invert(1)"></img>
                   Update data
                 </div>
               </li>
@@ -300,6 +300,19 @@
               </div>
             {% endfor %}
           {% endif %}
+        </div>
+        <div class="d-flex align-items-center user-select-none">
+          <button type="submit" value="" class="btn me-auto shadow-none message-panel-button" id="previous-page">
+            <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/chevron-left.svg' %}" width="18" height="18">
+          </button>
+          <div class="p-1 smaller">
+            {% for page in pages %}
+              <a id="{{ page }}" class="text-muted" name="page-number">{{ page }}</a>
+            {% endfor %}
+          </div>
+          <button type="submit" value="" class="btn ms-auto shadow-none message-panel-button" id="next-page">
+            <img class="bi p-none" src="{% static 'dashboard/images/bootstrap-icons/chevron-right.svg' %}" width="18" height="18">
+          </button>
         </div>
       </div>
 

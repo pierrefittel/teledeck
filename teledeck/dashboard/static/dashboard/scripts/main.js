@@ -206,6 +206,21 @@ function sortByDate() {
     messageThread.innerHTML = xmlHttp.responseText;
     document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
     document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
+    //+Event listener on page number
+}
+
+function displayPage(e) {
+    const messageThread = document.getElementById('messages');
+    const pageNumber = e.target.id;
+    console.log(pageNumber);
+    const request = `/dashboard/page/${pageNumber}`;
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, false);
+    xmlHttp.send( null );
+    messageThread.innerHTML = xmlHttp.responseText;
+    document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
+    document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
+    //+Event listener on page number
 }
 
 function showDetail(e) {
@@ -568,6 +583,15 @@ function openSettings() {
     main.innerHTML += xmlHttp.responseText;
 }
 
+function checkAPIAuth() {
+    //Check if user is correctly logged in Telegram API. Work in progress
+    const request = `/dashboard/check-api-auth`;
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", request, false);
+    xmlHttp.send( null );
+    console.log(xmlHttp.responseText);
+}
+
 function addEvents() {
     //Event listeners
     //Nav bar toggles
@@ -594,6 +618,8 @@ function addEvents() {
     document.querySelectorAll('#delete-filter').forEach(filter => { filter.addEventListener('click', deleteFilter); });
     //Sort by date button
     document.getElementById('sort-by-date').addEventListener('click', function() { sortByDate(); });
+    //Page number
+    document.querySelectorAll('[name="page-number"]').forEach(message => { message.addEventListener('click', displayPage); });
     //Message detail toggle
     document.querySelectorAll('#message-container').forEach(message => { message.addEventListener('click', showDetail); });
     //Graph selection
@@ -604,14 +630,4 @@ function addEvents() {
     document.getElementById('settings').addEventListener('click', function() { openSettings(); });
 }
 
-function checkAPIAuth() {
-    //Check if user is correctly logged in Telegram API. Work in progress
-    const request = `/dashboard/check-api-auth`;
-    const xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", request, false);
-    xmlHttp.send( null );
-    console.log(xmlHttp.responseText);
-}
-
 addEvents();
-checkAPIAuth();

@@ -2,6 +2,7 @@ import csv
 import asyncio
 import json as JSON
 import ntpath
+import math
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -48,7 +49,7 @@ def index(request):
             #Retrieve all channels
             channels = Channel.objects.all().order_by(Lower('channel_name'))
             #Retrieve all messages
-            messages = filter_messages(request, "view")
+            messages = filter_messages(request, "view", page=0)
             #Retrieve all filters
             filters = Filter.objects.all()
             #Channel edit form
@@ -58,7 +59,8 @@ def index(request):
             context = {
                 'user': current_user,
                 'groups': groups,
-                'messages': messages,
+                'messages': messages['messages'][:100],
+                'pages': range(messages['pages']),
                 'channels': channels,
                 'filters': filters,
                 'add_channel': add_channel,
@@ -264,7 +266,7 @@ def delete_filter(request, filter_id=None):
     context = {'filters': filters}
     return render(request, 'dashboard/filter.html', context)
 
-def filter_messages(request, caller=None):
+def filter_messages(request, caller=None, page=0):
     channels = Channel.objects.all()
     filters = Filter.objects.all()
     messages = Message.objects.all()
@@ -280,7 +282,7 @@ def filter_messages(request, caller=None):
                 messages = messages.filter(message_text__icontains = filter.text_filter)
             if filter.translation_filter:
                 #Filter messages from translation
-                messages = messages.filter(message_text__icontains = filter.translation_filter)
+                messages = messages.filter(text_translation__icontains = filter.translation_filter)
             if filter.view_count:
                 #Filter messages from views
                 messages = messages.filter(view_count__gte = filter.view_count)
@@ -296,29 +298,30 @@ def filter_messages(request, caller=None):
     #Sort by date upward or downward based on account parameter
     current_user = request.user
     parameters = Parameter.objects.get(user_name=current_user)
+    page_number = math.ceil(len(messages)/100)
     if parameters.message_sort_by_date == 'UP':
         if request.get_full_path() == '/dashboard/sort-by-date':
             #Prevent parameter modification on page reload
-            messages = messages.order_by('-message_date')[:parameters.message_load_number]
+            messages = messages.order_by('-message_date')
             parameters.message_sort_by_date = 'DOWN'
             parameters.save()
         else:
-            messages = messages.order_by('message_date')[:parameters.message_load_number]
+            messages = messages.order_by('message_date')
     elif parameters.message_sort_by_date == 'DOWN':
         if request.get_full_path() == '/dashboard/sort-by-date':
             #Prevent parameter modification on page reload
-            messages = messages.order_by('message_date')[:parameters.message_load_number]
+            messages = messages.order_by('message_date')
             parameters.message_sort_by_date = 'UP'
             parameters.save()
         else:
-            messages = messages.order_by('-message_date')[:parameters.message_load_number]
+            messages = messages.order_by('-message_date')
     #Render filtered messages and return them to another function or request depending on caller
     if caller == 'view':
         #If caller is another view, return messages as an object
-        return messages
+        return {'messages': messages, 'pages': page_number}
     else:
         #If caller is a GET request, return messages as a segment of a webpage
-        context = {'messages': messages, 'parameters': parameters}
+        context = {'messages': messages[page:page+100], 'parameters': parameters, 'pages': page_number}
         return render(request, 'dashboard/messages.html', context)
 
 def export_CSV(request):
@@ -334,6 +337,11 @@ def export_CSV(request):
             message_url = 'https://t.me/{}/{}'.format(message.channel_name, message.message_id)
             writer.writerow([message.pk, message.channel_name, message.message_id, message.message_text, message.text_translation, message.message_date, message.view_count, message.share_count, message_url])
     return response
+
+def load_page(request, page_number=None):
+    messages = filter_messages(request, "view", page_number*100)
+    context = {'messages': messages}
+    return render(request, 'dashboard/messages.html', context)
 
 def get_message_detail(request, message_id=None):
     current_user = request.user
